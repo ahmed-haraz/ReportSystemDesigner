@@ -1,7 +1,6 @@
 using System.Globalization;
-using System.Windows.Data;
 using System.Windows;
-using ReportDesigner.Core.Models;
+using System.Windows.Data;
 using TextAlignment = ReportDesigner.Core.Models.TextAlignment;
 
 namespace ReportDesigner.Desktop.Converters;
