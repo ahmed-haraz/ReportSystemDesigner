@@ -1,137 +1,170 @@
 <UserControl x:Class="ReportDesigner.Desktop.Views.DesignSurface"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="842" d:DesignWidth="595">
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="842"
+             d:DesignWidth="595">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Canvas Grid.Row="0" Background="#F0F0F0" x:Name="HorizontalRuler">
-            <TextBlock Text="Ruler" Margin="5,2" FontSize="10" Foreground="Gray"/>
+        <Canvas Grid.Row="0"
+                Background="#F0F0F0"
+                x:Name="HorizontalRuler">
+            <TextBlock Text="Ruler"
+                       Margin="5,2"
+                       FontSize="10"
+                       Foreground="Gray" />
         </Canvas>
 
-        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" 
+        <ScrollViewer Grid.Row="1"
+                      HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto"
                       x:Name="DesignScrollViewer">
-            <Grid x:Name="PageContainer" Margin="50">
+            <Grid x:Name="PageContainer"
+                  Margin="50">
                 <Grid.LayoutTransform>
-                    <ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}"/>
+                    <ScaleTransform ScaleX="{Binding Zoom}"
+                                    ScaleY="{Binding Zoom}" />
                 </Grid.LayoutTransform>
 
-                <Border Background="#CCCCCC" Margin="5,5,0,0" 
-                        Width="{Binding PageWidth}" 
-                        Height="{Binding PageHeight}"/>
+                <Border Background="#CCCCCC"
+                        Margin="5,5,0,0"
+                        Width="{Binding PageWidth}"
+                        Height="{Binding PageHeight}" />
 
-                <Border Background="White" BorderBrush="#999999" 
-                        BorderThickness="1" 
-                        Width="{Binding PageWidth}" 
+                <Border Background="White"
+                        BorderBrush="#999999"
+                        BorderThickness="1"
+                        Width="{Binding PageWidth}"
                         Height="{Binding PageHeight}"
                         x:Name="PageBorder">
 
-                    <!-- Main Canvas - ALL mouse events go here -->
-                    <Canvas x:Name="DesignCanvas" 
+                    <Canvas x:Name="DesignCanvas"
                             AllowDrop="True"
                             Width="{Binding PageWidth}"
-                            Height="{Binding PageHeight}">
+                            Height="{Binding PageHeight}"
+                            Drop="DesignCanvas_Drop"
+                            DragOver="DesignCanvas_DragOver">
 
-                        <!-- Grid Lines Background -->
+                        <!-- Grid Lines -->
                         <Canvas.Background>
-                            <DrawingBrush TileMode="Tile" Viewport="0,0,20,20" ViewportUnits="Absolute">
+                            <DrawingBrush TileMode="Tile"
+                                          Viewport="0,0,20,20"
+                                          ViewportUnits="Absolute">
                                 <DrawingBrush.Drawing>
                                     <GeometryDrawing>
                                         <GeometryDrawing.Geometry>
-                                            <RectangleGeometry Rect="0,0,20,20"/>
+                                            <RectangleGeometry Rect="0,0,20,20" />
                                         </GeometryDrawing.Geometry>
                                         <GeometryDrawing.Pen>
-                                            <Pen Brush="#F0F0F0" Thickness="0.5"/>
+                                            <Pen Brush="#F0F0F0"
+                                                 Thickness="0.5" />
                                         </GeometryDrawing.Pen>
                                     </GeometryDrawing>
                                 </DrawingBrush.Drawing>
                             </DrawingBrush>
                         </Canvas.Background>
 
-                        <!-- Bands Layer -->
-                        <ItemsControl ItemsSource="{Binding Bands}" 
+                        <!-- Bands - rendered as direct Canvas children for proper hit testing -->
+                        <ItemsControl ItemsSource="{Binding Bands}"
                                       x:Name="BandsItemsControl"
                                       Width="{Binding PageWidth}"
-                                      Height="{Binding PageHeight}"
-                                      IsHitTestVisible="False">
+                                      Height="{Binding PageHeight}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <Canvas/>
+                                    <Canvas />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="LightBlue" 
-                                            Opacity="0.3"
+                                    <Border Opacity="0.5"
                                             Height="{Binding Height}"
                                             Canvas.Top="{Binding Top}"
                                             Width="{Binding DataContext.PageWidth, 
                                                     RelativeSource={RelativeSource AncestorType=Canvas}}"
-                                            BorderBrush="Blue"
+                                            BorderBrush="#0066CC"
                                             BorderThickness="1"
-                                            IsHitTestVisible="True"
-                                            PreviewMouseLeftButtonDown="BandBorder_PreviewMouseLeftButtonDown">
-                                        <TextBlock Text="{Binding Name}" 
-                                                   VerticalAlignment="Top" 
+                                            MouseLeftButtonDown="BandBorder_MouseLeftButtonDown"
+                                            Background="#E0F0FF">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSelected}"
+                                                                 Value="True">
+                                                        <Setter Property="BorderBrush"
+                                                                Value="Red" />
+                                                        <Setter Property="BorderThickness"
+                                                                Value="2" />
+                                                        <Setter Property="Opacity"
+                                                                Value="0.7" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Text="{Binding Name}"
+                                                   VerticalAlignment="Top"
                                                    HorizontalAlignment="Left"
-                                                   Margin="5,2" 
-                                                   FontSize="10" 
-                                                   Foreground="DarkBlue"
-                                                   FontWeight="Bold"/>
+                                                   Margin="5,2"
+                                                   FontSize="10"
+                                                   Foreground="#0066CC"
+                                                   FontWeight="Bold"
+                                                   IsHitTestVisible="False" />
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <!-- Objects Layer -->
-                        <ItemsControl ItemsSource="{Binding SelectedBand.Objects}" 
+                        <!-- Objects in Selected Band -->
+                        <ItemsControl ItemsSource="{Binding SelectedBand.Objects}"
                                       x:Name="ObjectsItemsControl"
                                       Width="{Binding PageWidth}"
-                                      Height="{Binding PageHeight}"
-                                      IsHitTestVisible="False">
+                                      Height="{Binding PageHeight}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <Canvas/>
+                                    <Canvas />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Canvas.Left="{Binding Left}" 
+                                    <Border Canvas.Left="{Binding Left}"
                                             Canvas.Top="{Binding Top}"
-                                            Width="{Binding Width}" 
+                                            Width="{Binding Width}"
                                             Height="{Binding Height}"
                                             BorderBrush="Blue"
-                                            BorderThickness="2"
-                                            Background="Transparent"
-                                            IsHitTestVisible="True"
+                                            BorderThickness="1"
+                                            Background="White"
                                             Cursor="SizeAll"
-                                            PreviewMouseLeftButtonDown="ObjectBorder_PreviewMouseLeftButtonDown"
-                                            PreviewMouseMove="ObjectBorder_PreviewMouseMove"
-                                            PreviewMouseLeftButtonUp="ObjectBorder_PreviewMouseLeftButtonUp">
-                                        <ContentControl Content="{Binding}" 
-                                                        HorizontalAlignment="Stretch" 
-                                                        VerticalAlignment="Stretch">
-                                            <ContentControl.ContentTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding Text}" 
-                                                               FontFamily="{Binding TextProps.FontName}"
-                                                               FontSize="{Binding TextProps.FontSize}"
-                                                               Foreground="Black"
-                                                               TextAlignment="Left"
-                                                               TextWrapping="Wrap"
-                                                               HorizontalAlignment="Stretch"
-                                                               VerticalAlignment="Stretch"
-                                                               Margin="2"/>
-                                                </DataTemplate>
-                                            </ContentControl.ContentTemplate>
-                                        </ContentControl>
+                                            MouseLeftButtonDown="ObjectBorder_MouseLeftButtonDown"
+                                            MouseMove="ObjectBorder_MouseMove"
+                                            MouseLeftButtonUp="ObjectBorder_MouseLeftButtonUp">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSelected}"
+                                                                 Value="True">
+                                                        <Setter Property="BorderBrush"
+                                                                Value="Red" />
+                                                        <Setter Property="BorderThickness"
+                                                                Value="2" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Text="{Binding Text}"
+                                                   FontFamily="{Binding TextProps.FontName}"
+                                                   FontSize="{Binding TextProps.FontSize}"
+                                                   Foreground="Black"
+                                                   TextAlignment="Left"
+                                                   TextWrapping="Wrap"
+                                                   HorizontalAlignment="Stretch"
+                                                   VerticalAlignment="Stretch"
+                                                   Margin="2"
+                                                   IsHitTestVisible="False" />
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

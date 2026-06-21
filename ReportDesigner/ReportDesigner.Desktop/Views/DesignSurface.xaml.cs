@@ -18,31 +18,20 @@ public partial class DesignSurface : UserControl
     public DesignSurface()
     {
         InitializeComponent();
-
-        // Attach drop to Canvas directly
-        DesignCanvas.Drop += DesignCanvas_Drop;
-        DesignCanvas.DragOver += DesignCanvas_DragOver;
-        DesignCanvas.PreviewMouseLeftButtonDown += DesignCanvas_PreviewMouseLeftButtonDown;
-        DesignCanvas.PreviewMouseMove += DesignCanvas_PreviewMouseMove;
-        DesignCanvas.PreviewMouseLeftButtonUp += DesignCanvas_PreviewMouseLeftButtonUp;
     }
 
     // ====== DROP FROM TOOLBOX ======
 
-    private void DesignCanvas_DragOver(object? sender, DragEventArgs e)
+    private void DesignCanvas_DragOver(object sender, DragEventArgs e)
     {
         if (e.Data.GetDataPresent("BandType") || e.Data.GetDataPresent("ObjectType"))
         {
             e.Effects = DragDropEffects.Move;
             e.Handled = true;
         }
-        else
-        {
-            e.Effects = DragDropEffects.None;
-        }
     }
 
-    private void DesignCanvas_Drop(object? sender, DragEventArgs e)
+    private void DesignCanvas_Drop(object sender, DragEventArgs e)
     {
         var position = e.GetPosition(DesignCanvas);
         var vm = DataContext as DesignViewModel;
@@ -72,19 +61,34 @@ public partial class DesignSurface : UserControl
 
     // ====== BAND SELECTION ======
 
-    private void BandBorder_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void BandBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (sender is Border border && border.DataContext is Band band)
         {
             var vm = DataContext as DesignViewModel;
-            vm?.SelectBand(band);
+            if (vm != null)
+            {
+                // Deselect all bands
+                foreach (var b in vm.Bands)
+                {
+                    b.IsSelected = false;
+                }
+
+                // Select clicked band
+                band.IsSelected = true;
+                vm.SelectBand(band);
+
+                // Refresh band visuals
+                BandsItemsControl.Items.Refresh();
+            }
+
             e.Handled = true;
         }
     }
 
     // ====== OBJECT SELECTION AND DRAG ======
 
-    private void ObjectBorder_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void ObjectBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (sender is Border border && border.DataContext is ReportObject obj)
         {
@@ -95,14 +99,18 @@ public partial class DesignSurface : UserControl
             _objectStartPosition = new Point(obj.Left, obj.Top);
 
             var vm = DataContext as DesignViewModel;
-            vm?.SelectObject(obj);
+            if (vm != null)
+            {
+                vm.SelectObject(obj);
+                UpdatePropertiesPanel(obj);
+            }
 
             border.CaptureMouse();
             e.Handled = true;
         }
     }
 
-    private void ObjectBorder_PreviewMouseMove(object sender, MouseEventArgs e)
+    private void ObjectBorder_MouseMove(object sender, MouseEventArgs e)
     {
         if (_isDraggingObject && _draggedObject != null && _draggedBorder != null)
         {
@@ -119,7 +127,8 @@ public partial class DesignSurface : UserControl
             // Keep within bounds
             if (newLeft < 0) newLeft = 0;
             if (newTop < 0) newTop = 0;
-            if (newLeft + _draggedObject.Width > vm.PageWidth) newLeft = vm.PageWidth - _draggedObject.Width;
+            if (newLeft + _draggedObject.Width > vm.PageWidth) 
+                newLeft = vm.PageWidth - _draggedObject.Width;
             if (vm.SelectedBand != null && newTop + _draggedObject.Height > vm.SelectedBand.Height)
                 newTop = vm.SelectedBand.Height - _draggedObject.Height;
 
@@ -130,12 +139,14 @@ public partial class DesignSurface : UserControl
             _draggedBorder.SetValue(Canvas.LeftProperty, newLeft);
             _draggedBorder.SetValue(Canvas.TopProperty, newTop);
 
-            // Update properties panel via main VM
-            UpdatePropertiesPanel();
+            // Update properties panel live
+            UpdatePropertiesPanel(_draggedObject);
+
+            e.Handled = true;
         }
     }
 
-    private void ObjectBorder_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    private void ObjectBorder_MouseLeftButtonUp(object sender, MouseEventArgs e)
     {
         if (_isDraggingObject)
         {
@@ -147,50 +158,20 @@ public partial class DesignSurface : UserControl
                 _draggedBorder.ReleaseMouseCapture();
                 _draggedBorder = null;
             }
+
+            e.Handled = true;
         }
     }
 
-    // ====== CANVAS CLICK (Deselect) ======
+    // ====== UPDATE PROPERTIES PANEL ======
 
-    private void DesignCanvas_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        // Only deselect if clicking directly on canvas background
-        if (e.OriginalSource == DesignCanvas || e.OriginalSource is DrawingBrush)
-        {
-            var vm = DataContext as DesignViewModel;
-            if (vm?.SelectedObject != null)
-            {
-                vm.SelectObject(null!);
-            }
-        }
-    }
-
-    private void DesignCanvas_PreviewMouseMove(object sender, MouseEventArgs e)
-    {
-        var position = e.GetPosition(DesignCanvas);
-        var vm = DataContext as DesignViewModel;
-        if (vm != null)
-        {
-            var mainVm = FindParentViewModel();
-            if (mainVm != null)
-            {
-                mainVm.CursorPosition = $"X: {position.X / vm.Zoom:F1}, Y: {position.Y / vm.Zoom:F1}";
-            }
-        }
-    }
-
-    private void DesignCanvas_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-    {
-    }
-
-    private void UpdatePropertiesPanel()
+    private void UpdatePropertiesPanel(ReportObject obj)
     {
         var mainVm = FindParentViewModel();
-        if (mainVm != null && _draggedObject != null)
+        if (mainVm != null)
         {
-            // Update properties view model directly
-            mainVm.PropertiesViewModel.SelectedObject = _draggedObject;
-            mainVm.PropertiesViewModel.LoadObjectProperties(_draggedObject);
+            mainVm.PropertiesViewModel.SelectedObject = obj;
+            mainVm.PropertiesViewModel.LoadObjectProperties(obj);
         }
     }
 
