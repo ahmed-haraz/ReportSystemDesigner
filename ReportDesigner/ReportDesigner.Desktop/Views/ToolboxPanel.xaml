@@ -14,29 +14,29 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="Bands" FontWeight="Bold" Margin="5" Background="#E0E0E0" Padding="5"/>
-        <ListBox Grid.Row="1" ItemsSource="{Binding BandTypes}" 
+        <ListBox Grid.Row="1" x:Name="BandListBox" ItemsSource="{Binding BandTypes}" 
                  SelectedItem="{Binding SelectedBandType}"
+                 PreviewMouseLeftButtonDown="BandListBox_PreviewMouseLeftButtonDown"
                  MouseMove="BandListBox_MouseMove">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="[B]" Width="20" Margin="0,0,5,0"/>
-                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
-                    </StackPanel>
+                    <Border Background="LightBlue" Padding="5" Margin="2" CornerRadius="3">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                    </Border>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
 
         <TextBlock Grid.Row="2" Text="Objects" FontWeight="Bold" Margin="5" Background="#E0E0E0" Padding="5"/>
-        <ListBox Grid.Row="3" ItemsSource="{Binding ObjectTypes}" 
+        <ListBox Grid.Row="3" x:Name="ObjectListBox" ItemsSource="{Binding ObjectTypes}" 
                  SelectedItem="{Binding SelectedObjectType}"
+                 PreviewMouseLeftButtonDown="ObjectListBox_PreviewMouseLeftButtonDown"
                  MouseMove="ObjectListBox_MouseMove">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="[O]" Width="20" Margin="0,0,5,0"/>
-                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
-                    </StackPanel>
+                    <Border Background="LightGreen" Padding="5" Margin="2" CornerRadius="3">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                    </Border>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

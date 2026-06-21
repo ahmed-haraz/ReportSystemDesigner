@@ -5,6 +5,7 @@ using ReportDesigner.Core.Parsers;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 
 namespace ReportDesigner.Desktop.ViewModels;
 
@@ -46,6 +47,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _selectedZoom = "100%";
 
+    [ObservableProperty]
+    private double _zoomValue = 1.0;
+
     public ObservableCollection<string> ZoomLevels { get; } = new()
     {
         "25%", "50%", "75%", "100%", "125%", "150%", "200%", "400%"
@@ -53,10 +57,69 @@ public partial class MainViewModel : ObservableObject
 
     public ObservableCollection<Band> ReportBands => new(CurrentReport.Bands);
 
+    public MainViewModel()
+    {
+        // Wire up child viewmodels to main report
+        DesignViewModel.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(DesignViewModel.Bands))
+            {
+                CurrentReport.Bands = DesignViewModel.Bands.ToList();
+                OnPropertyChanged(nameof(ReportBands));
+            }
+        };
+
+        DataSourceViewModel.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(DataSourceViewModel.DataSources))
+            {
+                CurrentReport.DataSources = DataSourceViewModel.DataSources.ToList();
+            }
+        };
+
+        // Initialize with default bands
+        InitializeDefaultReport();
+    }
+
+    private void InitializeDefaultReport()
+    {
+        CurrentReport.Name = "New Report";
+        CurrentReport.Page = new PageSettings
+        {
+            Width = 595,
+            Height = 842,
+            LeftMargin = 40,
+            RightMargin = 40,
+            TopMargin = 40,
+            BottomMargin = 40
+        };
+
+        // Add default bands
+        DesignViewModel.AddBand(BandType.ReportTitle);
+        DesignViewModel.AddBand(BandType.PageHeader);
+        DesignViewModel.AddBand(BandType.Data);
+        DesignViewModel.AddBand(BandType.PageFooter);
+
+        CurrentReport.Bands = DesignViewModel.Bands.ToList();
+    }
+
+    partial void OnSelectedZoomChanged(string value)
+    {
+        if (double.TryParse(value.Replace("%", ""), out var zoom))
+        {
+            ZoomValue = zoom / 100.0;
+            DesignViewModel.Zoom = (float)ZoomValue;
+            StatusMessage = $"Zoom set to {value}";
+        }
+    }
+
     [RelayCommand]
     private void NewReport()
     {
         CurrentReport = new ReportTemplate { Name = "New Report" };
+        DesignViewModel.Bands.Clear();
+        DataSourceViewModel.DataSources.Clear();
+        InitializeDefaultReport();
         StatusMessage = "New report created";
     }
 
@@ -70,16 +133,34 @@ public partial class MainViewModel : ObservableObject
 
         if (dialog.ShowDialog() == true)
         {
-            var serializer = new FrxSerializer();
-            var content = await File.ReadAllTextAsync(dialog.FileName);
-            CurrentReport = serializer.Deserialize(content);
-            StatusMessage = $"Opened: {dialog.FileName}";
+            try
+            {
+                var serializer = new FrxSerializer();
+                var content = await File.ReadAllTextAsync(dialog.FileName);
+                CurrentReport = serializer.Deserialize(content);
+
+                // Sync to child viewmodels
+                DesignViewModel.Bands = new ObservableCollection<Band>(CurrentReport.Bands);
+                DataSourceViewModel.DataSources = new ObservableCollection<DataSource>(CurrentReport.DataSources);
+
+                StatusMessage = $"Opened: {dialog.FileName}";
+                OnPropertyChanged(nameof(ReportBands));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening file: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 
     [RelayCommand]
     private async Task SaveReport()
     {
+        // Sync from child viewmodels to main report
+        CurrentReport.Bands = DesignViewModel.Bands.ToList();
+        CurrentReport.DataSources = DataSourceViewModel.DataSources.ToList();
+
         var serializer = new FrxSerializer();
         var content = serializer.Serialize(CurrentReport);
 
@@ -105,85 +186,118 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void Preview()
     {
+        if (CurrentReport.Bands.Count == 0)
+        {
+            MessageBox.Show("Report has no bands to preview.", "Preview", 
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
         var previewWindow = new Views.PreviewWindow(CurrentReport);
         previewWindow.Show();
+        StatusMessage = "Preview opened";
     }
 
     [RelayCommand]
     private void DataSources()
     {
         var dialog = new Views.ConnectionDialog();
-        dialog.ShowDialog();
+        if (dialog.ShowDialog() == true)
+        {
+            // Connection was established, refresh data sources
+            StatusMessage = "Data source configured";
+        }
     }
 
     [RelayCommand]
     private void Parameters()
     {
-        MessageBox.Show("Parameters dialog would open here");
+        MessageBox.Show("Parameters dialog would open here.\n\n" +
+            "Current parameters:\n" + 
+            string.Join("\n", CurrentReport.Parameters.Select(p => $"- {p.Name}: {p.DataType}")),
+            "Parameters", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     [RelayCommand]
     private void Styles()
     {
-        MessageBox.Show("Styles dialog would open here");
+        MessageBox.Show("Styles editor would open here.", "Styles", 
+            MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     [RelayCommand]
     private void Print()
     {
-        MessageBox.Show("Print dialog would open here");
+        MessageBox.Show("Print dialog would open here.", "Print", 
+            MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     [RelayCommand]
     private void Undo()
     {
-        StatusMessage = "Undo not implemented";
+        StatusMessage = "Undo not implemented yet";
     }
 
     [RelayCommand]
     private void Redo()
     {
-        StatusMessage = "Redo not implemented";
+        StatusMessage = "Redo not implemented yet";
     }
 
     [RelayCommand]
     private void Cut()
     {
-        StatusMessage = "Cut not implemented";
+        StatusMessage = "Cut not implemented yet";
     }
 
     [RelayCommand]
     private void Copy()
     {
-        StatusMessage = "Copy not implemented";
+        StatusMessage = "Copy not implemented yet";
     }
 
     [RelayCommand]
     private void Paste()
     {
-        StatusMessage = "Paste not implemented";
+        StatusMessage = "Paste not implemented yet";
     }
 
     [RelayCommand]
     private void Delete()
     {
-        StatusMessage = "Delete not implemented";
+        if (DesignViewModel.SelectedObject != null)
+        {
+            DesignViewModel.RemoveObject(DesignViewModel.SelectedObject);
+            StatusMessage = "Object deleted";
+        }
+        else if (DesignViewModel.SelectedBand != null)
+        {
+            DesignViewModel.RemoveBand(DesignViewModel.SelectedBand);
+            StatusMessage = "Band deleted";
+        }
     }
 
     [RelayCommand]
     private void Documentation()
     {
-        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        try
         {
-            FileName = "https://docs.microsoft.com",
-            UseShellExecute = true
-        });
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "https://docs.microsoft.com",
+                UseShellExecute = true
+            });
+        }
+        catch { }
     }
 
     [RelayCommand]
     private void About()
     {
-        MessageBox.Show("Report Designer v1.0\nBuilt with .NET 10 and WPF", "About", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show("Report Designer v1.0\nBuilt with .NET 10 and WPF\n\n" +
+            "Features:\n- Drag & Drop Design\n- SQL/SQLite Data Sources\n- " +
+            "FastReport-compatible .frx format\n- MAUI Report Engine integration",
+            "About Report Designer", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     [RelayCommand]

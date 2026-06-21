@@ -6,7 +6,7 @@
         xmlns:vm="clr-namespace:ReportDesigner.Desktop.ViewModels"
         xmlns:local="clr-namespace:ReportDesigner.Desktop.Views"
         mc:Ignorable="d"
-        Title="Report Designer" 
+        Title="Report Designer"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen">
     <Window.DataContext>

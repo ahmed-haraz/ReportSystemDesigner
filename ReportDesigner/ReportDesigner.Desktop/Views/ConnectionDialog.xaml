@@ -4,32 +4,51 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Connection Wizard" Height="500" Width="600"
-        WindowStartupLocation="CenterScreen">
+        Title="Connection Wizard" Height="550" Width="600"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResize">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="Data Source Connection" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
 
-        <TabControl Grid.Row="1">
+        <TabControl Grid.Row="1" x:Name="ConnectionTabs">
             <TabItem Header="SQLite">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Text="Database File:" Grid.Row="0"/>
-                    <TextBox Grid.Row="1" x:Name="txtDbPath" Margin="0,5"/>
-                    <Button Grid.Row="2" Content="Browse..." Click="BrowseButton_Click" HorizontalAlignment="Left" Padding="10,2"/>
-                    <Button Grid.Row="3" Content="Test Connection" Click="TestSQLite_Click" VerticalAlignment="Top" Margin="0,10,0,0" Padding="15,5"/>
+
+                    <TextBlock Grid.Row="0" Text="Database File:" FontWeight="SemiBold" Margin="0,5"/>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" x:Name="txtDbPath" Margin="0,2" Text="app.db"/>
+                        <Button Grid.Column="1" Content="Browse..." Click="BrowseButton_Click" Margin="5,2" Padding="10,2"/>
+                    </Grid>
+
+                    <TextBlock Grid.Row="2" Text="Password (optional):" Margin="0,5"/>
+                    <PasswordBox Grid.Row="3" x:Name="txtDbPassword" Margin="0,2"/>
+
+                    <CheckBox Grid.Row="4" Content="Read Only" x:Name="chkReadOnly" Margin="0,5"/>
+
+                    <Button Grid.Row="5" Content="Test Connection" Click="TestSQLite_Click" 
+                            HorizontalAlignment="Left" Padding="15,5" Margin="0,10,0,0"/>
                 </Grid>
             </TabItem>
+
             <TabItem Header="SQL Server">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
@@ -39,35 +58,66 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="120"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Server:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
-                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtServer" Margin="0,2"/>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Server:" VerticalAlignment="Center" Margin="0,5"/>
+                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtServer" Margin="0,2" Text="localhost"/>
 
-                    <TextBlock Text="Database:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Database:" VerticalAlignment="Center" Margin="0,5"/>
                     <TextBox Grid.Row="1" Grid.Column="1" x:Name="txtDatabase" Margin="0,2"/>
 
-                    <TextBlock Text="Username:" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
-                    <TextBox Grid.Row="2" Grid.Column="1" x:Name="txtUsername" Margin="0,2"/>
+                    <CheckBox Grid.Row="2" Grid.Column="1" Content="Windows Authentication" 
+                              x:Name="chkWindowsAuth" Margin="0,5" Checked="WindowsAuth_Checked" Unchecked="WindowsAuth_Unchecked"/>
 
-                    <TextBlock Text="Password:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
-                    <PasswordBox Grid.Row="3" Grid.Column="1" x:Name="txtPassword" Margin="0,2"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Username:" VerticalAlignment="Center" Margin="0,5"/>
+                    <TextBox Grid.Row="3" Grid.Column="1" x:Name="txtUsername" Margin="0,2"/>
 
-                    <CheckBox Grid.Row="4" Grid.Column="1" Content="Windows Authentication" x:Name="chkWindowsAuth" Margin="0,5"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Password:" VerticalAlignment="Center" Margin="0,5"/>
+                    <PasswordBox Grid.Row="4" Grid.Column="1" x:Name="txtPassword" Margin="0,2"/>
 
-                    <Button Grid.Row="5" Grid.Column="1" Content="Test Connection" Click="TestSqlServer_Click" HorizontalAlignment="Left" Padding="15,5" Margin="0,10,0,0"/>
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Timeout:" VerticalAlignment="Center" Margin="0,5"/>
+                    <TextBox Grid.Row="5" Grid.Column="1" x:Name="txtTimeout" Margin="0,2" Text="30"/>
+
+                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Connection String:" VerticalAlignment="Center" Margin="0,5"/>
+                    <TextBox Grid.Row="6" Grid.Column="1" x:Name="txtSqlConnectionString" 
+                             Margin="0,2" IsReadOnly="True" Background="#F0F0F0"/>
+
+                    <Button Grid.Row="7" Grid.Column="1" Content="Test Connection" Click="TestSqlServer_Click" 
+                            HorizontalAlignment="Left" Padding="15,5" Margin="0,10,0,0"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="PostgreSQL">
+                <Grid Margin="10">
+                    <TextBlock Text="PostgreSQL connection settings would go here." 
+                               VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="MySQL">
+                <Grid Margin="10">
+                    <TextBlock Text="MySQL connection settings would go here." 
+                               VerticalAlignment="Center" HorizontalAlignment="Center"/>
                 </Grid>
             </TabItem>
         </TabControl>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-            <Button Content="OK" Click="OkButton_Click" Padding="20,5" Margin="0,0,10,0"/>
-            <Button Content="Cancel" Click="CancelButton_Click" Padding="20,5"/>
+        <!-- Status -->
+        <Border Grid.Row="2" Background="#F0F0F0" Margin="0,10" Padding="5" CornerRadius="3">
+            <TextBlock x:Name="txtStatus" Text="Ready" Foreground="Gray"/>
+        </Border>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
+            <Button Content="OK" Click="OkButton_Click" Padding="20,5" Margin="0,0,10,0" IsDefault="True"/>
+            <Button Content="Cancel" Click="CancelButton_Click" Padding="20,5" IsCancel="True"/>
         </StackPanel>
     </Grid>
 </Window>

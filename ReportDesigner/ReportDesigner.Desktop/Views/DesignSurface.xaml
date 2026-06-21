@@ -11,11 +11,18 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Canvas Grid.Row="0" Background="#F0F0F0" x:Name="HorizontalRuler"/>
+        <Canvas Grid.Row="0" Background="#F0F0F0" x:Name="HorizontalRuler">
+            <TextBlock Text="Ruler" Margin="5,2" FontSize="10" Foreground="Gray"/>
+        </Canvas>
 
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" 
-                      VerticalScrollBarVisibility="Auto">
+                      VerticalScrollBarVisibility="Auto"
+                      x:Name="DesignScrollViewer">
             <Grid x:Name="PageContainer" Margin="50">
+                <Grid.LayoutTransform>
+                    <ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}"/>
+                </Grid.LayoutTransform>
+
                 <Border Background="#CCCCCC" Margin="5,5,0,0" 
                         Width="{Binding PageWidth}" 
                         Height="{Binding PageHeight}"/>
@@ -25,15 +32,35 @@
                         Width="{Binding PageWidth}" 
                         Height="{Binding PageHeight}"
                         x:Name="PageBorder">
+
+                    <!-- Main Canvas - ALL mouse events go here -->
                     <Canvas x:Name="DesignCanvas" 
                             AllowDrop="True"
-                            DragOver="DesignCanvas_DragOver"
-                            Drop="DesignCanvas_Drop"
-                            MouseLeftButtonDown="DesignCanvas_MouseLeftButtonDown"
-                            MouseMove="DesignCanvas_MouseMove"
-                            MouseLeftButtonUp="DesignCanvas_MouseLeftButtonUp">
+                            Width="{Binding PageWidth}"
+                            Height="{Binding PageHeight}">
 
-                        <ItemsControl ItemsSource="{Binding Bands}">
+                        <!-- Grid Lines Background -->
+                        <Canvas.Background>
+                            <DrawingBrush TileMode="Tile" Viewport="0,0,20,20" ViewportUnits="Absolute">
+                                <DrawingBrush.Drawing>
+                                    <GeometryDrawing>
+                                        <GeometryDrawing.Geometry>
+                                            <RectangleGeometry Rect="0,0,20,20"/>
+                                        </GeometryDrawing.Geometry>
+                                        <GeometryDrawing.Pen>
+                                            <Pen Brush="#F0F0F0" Thickness="0.5"/>
+                                        </GeometryDrawing.Pen>
+                                    </GeometryDrawing>
+                                </DrawingBrush.Drawing>
+                            </DrawingBrush>
+                        </Canvas.Background>
+
+                        <!-- Bands Layer -->
+                        <ItemsControl ItemsSource="{Binding Bands}" 
+                                      x:Name="BandsItemsControl"
+                                      Width="{Binding PageWidth}"
+                                      Height="{Binding PageHeight}"
+                                      IsHitTestVisible="False">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -46,19 +73,29 @@
                                             Height="{Binding Height}"
                                             Canvas.Top="{Binding Top}"
                                             Width="{Binding DataContext.PageWidth, 
-                                                    RelativeSource={RelativeSource AncestorType=Canvas}}">
+                                                    RelativeSource={RelativeSource AncestorType=Canvas}}"
+                                            BorderBrush="Blue"
+                                            BorderThickness="1"
+                                            IsHitTestVisible="True"
+                                            PreviewMouseLeftButtonDown="BandBorder_PreviewMouseLeftButtonDown">
                                         <TextBlock Text="{Binding Name}" 
                                                    VerticalAlignment="Top" 
                                                    HorizontalAlignment="Left"
                                                    Margin="5,2" 
                                                    FontSize="10" 
-                                                   Foreground="DarkBlue"/>
+                                                   Foreground="DarkBlue"
+                                                   FontWeight="Bold"/>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <ItemsControl ItemsSource="{Binding SelectedBand.Objects}">
+                        <!-- Objects Layer -->
+                        <ItemsControl ItemsSource="{Binding SelectedBand.Objects}" 
+                                      x:Name="ObjectsItemsControl"
+                                      Width="{Binding PageWidth}"
+                                      Height="{Binding PageHeight}"
+                                      IsHitTestVisible="False">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -71,17 +108,27 @@
                                             Width="{Binding Width}" 
                                             Height="{Binding Height}"
                                             BorderBrush="Blue"
-                                            BorderThickness="1"
-                                            MouseLeftButtonDown="Object_MouseLeftButtonDown">
-                                        <ContentControl Content="{Binding}">
+                                            BorderThickness="2"
+                                            Background="Transparent"
+                                            IsHitTestVisible="True"
+                                            Cursor="SizeAll"
+                                            PreviewMouseLeftButtonDown="ObjectBorder_PreviewMouseLeftButtonDown"
+                                            PreviewMouseMove="ObjectBorder_PreviewMouseMove"
+                                            PreviewMouseLeftButtonUp="ObjectBorder_PreviewMouseLeftButtonUp">
+                                        <ContentControl Content="{Binding}" 
+                                                        HorizontalAlignment="Stretch" 
+                                                        VerticalAlignment="Stretch">
                                             <ContentControl.ContentTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding DisplayText}" 
+                                                    <TextBlock Text="{Binding Text}" 
                                                                FontFamily="{Binding TextProps.FontName}"
                                                                FontSize="{Binding TextProps.FontSize}"
                                                                Foreground="Black"
                                                                TextAlignment="Left"
-                                                               TextWrapping="Wrap"/>
+                                                               TextWrapping="Wrap"
+                                                               HorizontalAlignment="Stretch"
+                                                               VerticalAlignment="Stretch"
+                                                               Margin="2"/>
                                                 </DataTemplate>
                                             </ContentControl.ContentTemplate>
                                         </ContentControl>

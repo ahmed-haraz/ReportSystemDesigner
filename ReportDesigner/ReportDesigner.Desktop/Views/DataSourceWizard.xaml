@@ -9,38 +9,94 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="150"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="150"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="Data Sources" FontWeight="Bold" Margin="5" Background="#E0E0E0" Padding="5"/>
 
+        <!-- Toolbar -->
         <ToolBar Grid.Row="1" Margin="2">
-            <Button Content="+" ToolTip="Add Data Source" Command="{Binding AddDataSourceCommand}"/>
-            <Button Content="-" ToolTip="Remove Data Source" Command="{Binding RemoveDataSourceCommand}"/>
-            <Button Content="Test" ToolTip="Test Connection" Command="{Binding TestConnectionCommand}"/>
+            <Button Content="+ Add" ToolTip="Add Data Source" Command="{Binding AddDataSourceCommand}" Padding="5,2"/>
+            <Button Content="- Remove" ToolTip="Remove Data Source" Command="{Binding RemoveDataSourceCommand}" Padding="5,2"/>
+            <Button Content="Test" ToolTip="Test Connection" Command="{Binding TestConnectionCommand}" Padding="5,2"/>
+            <Button Content="Refresh" ToolTip="Refresh Schema" Command="{Binding RefreshSchemaCommand}" Padding="5,2"/>
         </ToolBar>
 
+        <!-- Data Sources List -->
         <ListBox Grid.Row="2" ItemsSource="{Binding DataSources}" 
-                 SelectedItem="{Binding SelectedDataSource}" Margin="5">
+                 SelectedItem="{Binding SelectedDataSource}" Margin="5"
+                 x:Name="DataSourcesListBox">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel>
-                        <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                    <StackPanel Margin="2">
+                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12"/>
                         <TextBlock Text="{Binding Type}" FontSize="10" Foreground="Gray"/>
+                        <TextBlock Text="{Binding ConnectionString}" FontSize="9" Foreground="DarkGray" 
+                                   TextTrimming="CharacterEllipsis" MaxWidth="200"/>
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <StackPanel Grid.Row="3" Margin="5">
-            <TextBlock Text="Connection String:" FontWeight="SemiBold"/>
-            <TextBox Text="{Binding ConnectionString, UpdateSourceTrigger=PropertyChanged}" 
-                     TextWrapping="Wrap" AcceptsReturn="True" Height="60" FontSize="10"/>
+        <!-- Tables/Views -->
+        <TextBlock Grid.Row="3" Text="Tables and Views" FontWeight="Bold" Margin="5,2" Background="#E8E8E8" Padding="3"/>
+        <ListBox Grid.Row="4" ItemsSource="{Binding Tables}" 
+                 SelectedItem="{Binding SelectedTable}" Margin="5"
+                 x:Name="TablesListBox"
+                 SelectionChanged="TablesListBox_SelectionChanged">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" FontSize="10" ToolTip="Double-click to select"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
-            <TextBlock Text="Query:" FontWeight="SemiBold" Margin="0,5,0,0"/>
-            <TextBox Text="{Binding SelectCommand, UpdateSourceTrigger=PropertyChanged}" 
-                     TextWrapping="Wrap" AcceptsReturn="True" Height="60" FontSize="10"/>
-        </StackPanel>
+        <!-- Columns -->
+        <TextBlock Grid.Row="5" Text="Columns" FontWeight="Bold" Margin="5,2" Background="#E8E8E8" Padding="3"/>
+        <ListBox Grid.Row="6" ItemsSource="{Binding Columns}" Margin="5" MaxHeight="100">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="0,0,5,0"/>
+                        <TextBlock Text="(" Foreground="Gray"/>
+                        <TextBlock Text="{Binding DataType}" Foreground="Gray" FontSize="9"/>
+                        <TextBlock Text=")" Foreground="Gray"/>
+                        <TextBlock Text=" PK" Foreground="Red" FontWeight="Bold" FontSize="9"
+                                   Visibility="{Binding PrimaryKey, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Connection Details -->
+        <TextBlock Grid.Row="7" Text="Connection Details" FontWeight="Bold" Margin="5,5,5,2"/>
+        <Grid Grid.Row="8" Margin="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Type:" Margin="0,2"/>
+            <TextBox Grid.Row="0" Text="{Binding SelectedDataSource.Type}" IsReadOnly="True" Background="#F0F0F0" Margin="0,2"/>
+
+            <TextBlock Grid.Row="1" Text="Connection String:" Margin="0,2"/>
+            <TextBox Grid.Row="1" Text="{Binding ConnectionString, UpdateSourceTrigger=PropertyChanged}" 
+                     TextWrapping="Wrap" AcceptsReturn="True" Height="40" FontSize="9" Margin="0,2"/>
+
+            <TextBlock Grid.Row="2" Text="Query:" Margin="0,2"/>
+            <TextBox Grid.Row="2" Text="{Binding SelectCommand, UpdateSourceTrigger=PropertyChanged}" 
+                     TextWrapping="Wrap" AcceptsReturn="True" Height="40" FontSize="9" Margin="0,2"/>
+
+            <TextBlock Grid.Row="3" Text="Status:" Margin="0,2" FontWeight="Bold"/>
+            <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Margin="0,2" Foreground="Blue" TextWrapping="Wrap" FontSize="9"/>
+        </Grid>
     </Grid>
 </UserControl>
