@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report Version="2026.1" Name="CustomerList" Description="Sample template" Author="System">
+  <Dictionary>
+    <TableDataSource Name="Data" DataType="Json">
+      <Column Name="Id" DataType="System.Int32"/>
+      <Column Name="Name" DataType="System.String"/>
+    </TableDataSource>
+  </Dictionary>
+  <ReportPage Width="595" Height="842" LeftMargin="40" RightMargin="40" TopMargin="40" BottomMargin="40" Orientation="Portrait" PaperName="A4">
+    <ReportTitleBand Name="Title" Height="40" Top="0" CanGrow="true" CanShrink="false" RepeatOnEveryPage="false" PrintOnBottom="false" StartNewPage="false" PrintIfDetailEmpty="true" KeepTogether="true" Outline="false" OutlineLevel="1">
+      <TextObject Name="txtTitle" Left="0" Top="0" Width="515" Height="30" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="CustomerList Report" DataColumn="" Expression="" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 18pt" Bold="true" Italic="false" Underline="false" Strikeout="false" ForeColor="#000000" BackColor="#FFFFFF" Alignment="Center" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+      </TextObject>
+    </ReportTitleBand>
+    <DataBand Name="Data1" Height="20" Top="45" CanGrow="true" CanShrink="false" RepeatOnEveryPage="false" PrintOnBottom="false" StartNewPage="false" PrintIfDetailEmpty="true" KeepTogether="true" Outline="false" OutlineLevel="1" DataSource="Data" Filter="" Sort="">
+      <TextObject Name="detId" Left="0" Top="0" Width="100" Height="18" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="" DataColumn="Data.Id" Expression="" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 10pt" Bold="false" Italic="false" Underline="false" Strikeout="false" ForeColor="#000000" BackColor="#FFFFFF" Alignment="Left" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+        <Border Left="false" Right="false" Top="false" Bottom="true" Width="0.5" Color="#808080" Style="Solid" Radius="0"/>
+      </TextObject>
+      <TextObject Name="detName" Left="100" Top="0" Width="415" Height="18" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="" DataColumn="Data.Name" Expression="" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 10pt" Bold="false" Italic="false" Underline="false" Strikeout="false" ForeColor="#000000" BackColor="#FFFFFF" Alignment="Left" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+        <Border Left="false" Right="false" Top="false" Bottom="true" Width="0.5" Color="#808080" Style="Solid" Radius="0"/>
+      </TextObject>
+    </DataBand>
+    <PageFooterBand Name="Footer" Height="30" Top="0" CanGrow="true" CanShrink="false" RepeatOnEveryPage="false" PrintOnBottom="true" StartNewPage="false" PrintIfDetailEmpty="true" KeepTogether="true" Outline="false" OutlineLevel="1">
+      <TextObject Name="txtPage" Left="0" Top="10" Width="515" Height="15" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="" DataColumn="" Expression="Page [Page#] of [TotalPages#]" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 9pt" Bold="false" Italic="false" Underline="false" Strikeout="false" ForeColor="#808080" BackColor="#FFFFFF" Alignment="Center" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+      </TextObject>
+    </PageFooterBand>
+  </ReportPage>
+  <Script></Script>
+  <ReferencedAssemblies/>
+</Report>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report Version="2026.1" Name="Sales Report" Description="Monthly sales report template" Author="System" ScriptLanguage="CSharp" ConvertNulls="true" DoublePass="false">
+  <Dictionary>
+    <TableDataSource Name="SalesData" DataType="SQLite" SelectCommand="SELECT * FROM Sales WHERE Date BETWEEN @StartDate AND @EndDate" CommandTimeout="30">
+      <Column Name="Id" DataType="System.Int32" Nullable="true" PrimaryKey="false" ReadOnly="false"/>
+      <Column Name="ProductName" DataType="System.String" Caption="Product Name" Nullable="true" PrimaryKey="false" ReadOnly="false"/>
+      <Column Name="Quantity" DataType="System.Int32" Nullable="true" PrimaryKey="false" ReadOnly="false"/>
+      <Column Name="UnitPrice" DataType="System.Decimal" Nullable="true" PrimaryKey="false" ReadOnly="false" Format="C2"/>
+      <Column Name="Total" DataType="System.Decimal" Nullable="true" PrimaryKey="false" ReadOnly="false" Format="C2"/>
+      <Column Name="SaleDate" DataType="System.DateTime" Nullable="true" PrimaryKey="false" ReadOnly="false" Format="yyyy-MM-dd"/>
+      <Column Name="Salesperson" DataType="System.String" Nullable="true" PrimaryKey="false" ReadOnly="false"/>
+      <Parameter Name="StartDate" DataType="System.DateTime" Required="true" AllowNull="false" Hidden="false" MultiValue="false" Description="Start date for report period"/>
+      <Parameter Name="EndDate" DataType="System.DateTime" Required="true" AllowNull="false" Hidden="false" MultiValue="false" Description="End date for report period"/>
+    </TableDataSource>
+    <Parameter Name="ReportTitle" DataType="System.String" DefaultValue="Monthly Sales Report" Required="false" AllowNull="true" Hidden="false" MultiValue="false" Description="Report title displayed at top"/>
+    <Parameter Name="CompanyName" DataType="System.String" DefaultValue="My Company" Required="false" AllowNull="true" Hidden="false" MultiValue="false" Description="Company name for header"/>
+  </Dictionary>
+  <Styles/>
+  <ReportPage Width="595" Height="842" LeftMargin="40" RightMargin="40" TopMargin="40" BottomMargin="40" Orientation="Portrait" PaperName="A4" ColumnWidth="0" ColumnCount="1" ColumnGap="0" Resolution="96">
+    <Watermark Text="" Font="Arial" FontSize="48" Color="#C0C0C0" Opacity="0.3" ShowBehind="true"/>
+    <ReportTitleBand Name="ReportTitle1" Height="80" Top="0" CanGrow="true" CanShrink="false" RepeatOnEveryPage="false" PrintOnBottom="false" StartNewPage="false" PrintIfDetailEmpty="true" KeepTogether="true" Outline="false" OutlineLevel="1">
+      <TextObject Name="txtCompany" Left="0" Top="0" Width="515" Height="30" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="" DataColumn="" Expression="[CompanyName]" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 16pt" Bold="true" Italic="false" Underline="false" Strikeout="false" ForeColor="#000000" BackColor="#FFFFFF" Alignment="Center" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+      </TextObject>
+      <TextObject Name="txtTitle" Left="0" Top="35" Width="515" Height="25" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="" DataColumn="" Expression="[ReportTitle]" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 14pt" Bold="false" Italic="false" Underline="false" Strikeout="false" ForeColor="#000000" BackColor="#FFFFFF" Alignment="Center" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+      </TextObject>
+      <TextObject Name="txtDate" Left="0" Top="65" Width="515" Height="15" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="" DataColumn="" Expression="Generated: [Date]" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 9pt" Bold="false" Italic="false" Underline="false" Strikeout="false" ForeColor="#808080" BackColor="#FFFFFF" Alignment="Right" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+      </TextObject>
+    </ReportTitleBand>
+    <PageHeaderBand Name="PageHeader1" Height="25" Top="85" CanGrow="true" CanShrink="false" RepeatOnEveryPage="true" PrintOnBottom="false" StartNewPage="false" PrintIfDetailEmpty="true" KeepTogether="true" Outline="false" OutlineLevel="1">
+      <TextObject Name="hdrProduct" Left="0" Top="0" Width="200" Height="20" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="Product" DataColumn="" Expression="" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 10pt" Bold="true" Italic="false" Underline="false" Strikeout="false" ForeColor="#000000" BackColor="#E8E8E8" Alignment="Left" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+        <Border Left="true" Right="true" Top="true" Bottom="true" Width="1" Color="#000000" Style="Solid" Radius="0"/>
+      </TextObject>
+      <TextObject Name="hdrQty" Left="200" Top="0" Width="80" Height="20" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="Qty" DataColumn="" Expression="" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 10pt" Bold="true" Italic="false" Underline="false" Strikeout="false" ForeColor="#000000" BackColor="#E8E8E8" Alignment="Center" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+        <Border Left="true" Right="true" Top="true" Bottom="true" Width="1" Color="#000000" Style="Solid" Radius="0"/>
+      </TextObject>
+      <TextObject Name="hdrPrice" Left="280" Top="0" Width="100" Height="20" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="Unit Price" DataColumn="" Expression="" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 10pt" Bold="true" Italic="false" Underline="false" Strikeout="false" ForeColor="#000000" BackColor="#E8E8E8" Alignment="Right" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+        <Border Left="true" Right="true" Top="true" Bottom="true" Width="1" Color="#000000" Style="Solid" Radius="0"/>
+      </TextObject>
+      <TextObject Name="hdrTotal" Left="380" Top="0" Width="135" Height="20" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="Total" DataColumn="" Expression="" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 10pt" Bold="true" Italic="false" Underline="false" Strikeout="false" ForeColor="#000000" BackColor="#E8E8E8" Alignment="Right" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+        <Border Left="true" Right="true" Top="true" Bottom="true" Width="1" Color="#000000" Style="Solid" Radius="0"/>
+      </TextObject>
+    </PageHeaderBand>
+    <DataBand Name="Data1" Height="20" Top="110" CanGrow="true" CanShrink="false" RepeatOnEveryPage="false" PrintOnBottom="false" StartNewPage="false" PrintIfDetailEmpty="true" KeepTogether="true" Outline="false" OutlineLevel="1" DataSource="SalesData" Filter="" Sort="">
+      <TextObject Name="detProduct" Left="0" Top="0" Width="200" Height="18" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="" DataColumn="SalesData.ProductName" Expression="" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 10pt" Bold="false" Italic="false" Underline="false" Strikeout="false" ForeColor="#000000" BackColor="#FFFFFF" Alignment="Left" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+        <Border Left="false" Right="false" Top="false" Bottom="true" Width="0.5" Color="#808080" Style="Solid" Radius="0"/>
+      </TextObject>
+      <TextObject Name="detQty" Left="200" Top="0" Width="80" Height="18" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="" DataColumn="SalesData.Quantity" Expression="" Format="{0:N0}" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 10pt" Bold="false" Italic="false" Underline="false" Strikeout="false" ForeColor="#000000" BackColor="#FFFFFF" Alignment="Center" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+        <Border Left="false" Right="false" Top="false" Bottom="true" Width="0.5" Color="#808080" Style="Solid" Radius="0"/>
+      </TextObject>
+      <TextObject Name="detPrice" Left="280" Top="0" Width="100" Height="18" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="" DataColumn="SalesData.UnitPrice" Expression="" Format="{0:C2}" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 10pt" Bold="false" Italic="false" Underline="false" Strikeout="false" ForeColor="#000000" BackColor="#FFFFFF" Alignment="Right" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+        <Border Left="false" Right="false" Top="false" Bottom="true" Width="0.5" Color="#808080" Style="Solid" Radius="0"/>
+      </TextObject>
+      <TextObject Name="detTotal" Left="380" Top="0" Width="135" Height="18" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="" DataColumn="SalesData.Total" Expression="" Format="{0:C2}" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 10pt" Bold="false" Italic="false" Underline="false" Strikeout="false" ForeColor="#000000" BackColor="#FFFFFF" Alignment="Right" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+        <Border Left="false" Right="false" Top="false" Bottom="true" Width="0.5" Color="#808080" Style="Solid" Radius="0"/>
+      </TextObject>
+    </DataBand>
+    <PageFooterBand Name="PageFooter1" Height="30" Top="0" CanGrow="true" CanShrink="false" RepeatOnEveryPage="false" PrintOnBottom="true" StartNewPage="false" PrintIfDetailEmpty="true" KeepTogether="true" Outline="false" OutlineLevel="1">
+      <TextObject Name="txtPage" Left="0" Top="10" Width="200" Height="15" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="" DataColumn="" Expression="Page [Page#] of [TotalPages#]" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 9pt" Bold="false" Italic="false" Underline="false" Strikeout="false" ForeColor="#808080" BackColor="#FFFFFF" Alignment="Left" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+      </TextObject>
+      <TextObject Name="txtSummary" Left="200" Top="10" Width="315" Height="15" CanGrow="true" CanShrink="false" Visible="true" ZIndex="0" Text="" DataColumn="" Expression="Total: [Sum(SalesData.Total)] | Items: [Count(SalesData)]" Format="" VisibleExpression="" Hyperlink="" Bookmark="" PrintOn="AllPages" Tag="">
+        <TextProperties Font="Arial, 9pt" Bold="false" Italic="false" Underline="false" Strikeout="false" ForeColor="#808080" BackColor="#FFFFFF" Alignment="Right" WordWrap="true" AutoShrink="false" AutoExpand="true" Angle="0" Format="" RightToLeft="false" CharSpacing="0" LineSpacing="1" TrimWhitespace="true" HtmlTags="false"/>
+      </TextObject>
+    </PageFooterBand>
+  </ReportPage>
+  <Script></Script>
+  <ReferencedAssemblies/>
+</Report>

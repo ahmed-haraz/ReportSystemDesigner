@@ -1,0 +1,138 @@
+<Window x:Class="ReportDesigner.Desktop.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:ReportDesigner.Desktop.ViewModels"
+        xmlns:local="clr-namespace:ReportDesigner.Desktop.Views"
+        mc:Ignorable="d"
+        Title="Report Designer" Height="900" Width="1400"
+        WindowStartupLocation="CenterScreen">
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Menu Grid.Row="0">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New Report" Command="{Binding NewReportCommand}" InputGestureText="Ctrl+N"/>
+                <MenuItem Header="_Open..." Command="{Binding OpenReportCommand}" InputGestureText="Ctrl+O"/>
+                <MenuItem Header="_Save" Command="{Binding SaveReportCommand}" InputGestureText="Ctrl+S"/>
+                <MenuItem Header="Save _As..." Command="{Binding SaveAsReportCommand}"/>
+                <Separator/>
+                <MenuItem Header="E_xit" Command="{Binding ExitCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" Command="{Binding UndoCommand}" InputGestureText="Ctrl+Z"/>
+                <MenuItem Header="_Redo" Command="{Binding RedoCommand}" InputGestureText="Ctrl+Y"/>
+                <Separator/>
+                <MenuItem Header="Cu_t" Command="{Binding CutCommand}" InputGestureText="Ctrl+X"/>
+                <MenuItem Header="_Copy" Command="{Binding CopyCommand}" InputGestureText="Ctrl+C"/>
+                <MenuItem Header="_Paste" Command="{Binding PasteCommand}" InputGestureText="Ctrl+V"/>
+                <MenuItem Header="_Delete" Command="{Binding DeleteCommand}" InputGestureText="Delete"/>
+            </MenuItem>
+            <MenuItem Header="_Report">
+                <MenuItem Header="_Data Sources..." Command="{Binding DataSourcesCommand}"/>
+                <MenuItem Header="_Parameters..." Command="{Binding ParametersCommand}"/>
+                <MenuItem Header="_Styles..." Command="{Binding StylesCommand}"/>
+                <Separator/>
+                <MenuItem Header="_Preview" Command="{Binding PreviewCommand}" InputGestureText="F5"/>
+                <MenuItem Header="_Print..." Command="{Binding PrintCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_Documentation" Command="{Binding DocumentationCommand}"/>
+                <MenuItem Header="_About" Command="{Binding AboutCommand}"/>
+            </MenuItem>
+        </Menu>
+
+        <ToolBarTray Grid.Row="1">
+            <ToolBar>
+                <Button Content="New" Command="{Binding NewReportCommand}" ToolTip="New Report (Ctrl+N)"/>
+                <Button Content="Open" Command="{Binding OpenReportCommand}" ToolTip="Open Report (Ctrl+O)"/>
+                <Button Content="Save" Command="{Binding SaveReportCommand}" ToolTip="Save Report (Ctrl+S)"/>
+                <Separator/>
+                <Button Content="Undo" Command="{Binding UndoCommand}" ToolTip="Undo (Ctrl+Z)"/>
+                <Button Content="Redo" Command="{Binding RedoCommand}" ToolTip="Redo (Ctrl+Y)"/>
+                <Separator/>
+                <Button Content="Preview" Command="{Binding PreviewCommand}" ToolTip="Preview (F5)"/>
+                <Button Content="Print" Command="{Binding PrintCommand}" ToolTip="Print"/>
+            </ToolBar>
+            <ToolBar>
+                <ComboBox Width="120" SelectedItem="{Binding SelectedZoom}" ItemsSource="{Binding ZoomLevels}"/>
+                <Separator/>
+                <ToggleButton Content="Grid" IsChecked="{Binding ShowGrid}" ToolTip="Show Grid"/>
+                <ToggleButton Content="Rulers" IsChecked="{Binding ShowRulers}" ToolTip="Show Rulers"/>
+                <ToggleButton Content="Guides" IsChecked="{Binding ShowGuides}" ToolTip="Show Guides"/>
+            </ToolBar>
+        </ToolBarTray>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250" MinWidth="200" MaxWidth="400"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="280" MinWidth="200" MaxWidth="400"/>
+            </Grid.ColumnDefinitions>
+
+            <TabControl Grid.Column="0">
+                <TabItem Header="Toolbox">
+                    <local:ToolboxPanel DataContext="{Binding ToolboxViewModel}"/>
+                </TabItem>
+                <TabItem Header="Data">
+                    <local:DataSourceWizard DataContext="{Binding DataSourceViewModel}"/>
+                </TabItem>
+                <TabItem Header="Report Tree">
+                    <TreeView ItemsSource="{Binding ReportBands}">
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Objects}">
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </TabItem>
+            </TabControl>
+
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"/>
+
+            <Border Grid.Column="2" Background="#808080">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                             CanContentScroll="True">
+                    <local:DesignSurface DataContext="{Binding DesignViewModel}"/>
+                </ScrollViewer>
+            </Border>
+
+            <GridSplitter Grid.Column="3" Width="5" HorizontalAlignment="Stretch"/>
+
+            <TabControl Grid.Column="4">
+                <TabItem Header="Properties">
+                    <local:PropertiesPanel DataContext="{Binding PropertiesViewModel}"/>
+                </TabItem>
+                <TabItem Header="Events">
+                    <TextBlock Text="Events panel" Margin="10"/>
+                </TabItem>
+                <TabItem Header="Data Bindings">
+                    <TextBlock Text="Data bindings panel" Margin="10"/>
+                </TabItem>
+            </TabControl>
+        </Grid>
+
+        <StatusBar Grid.Row="3">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}"/>
+            </StatusBarItem>
+            <StatusBarItem>
+                <TextBlock Text="{Binding SelectedObjectInfo}"/>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Text="{Binding CursorPosition}"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

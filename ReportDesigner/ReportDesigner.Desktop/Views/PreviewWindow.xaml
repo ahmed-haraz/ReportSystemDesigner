@@ -1,0 +1,42 @@
+<Window x:Class="ReportDesigner.Desktop.Views.PreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Report Preview" Height="800" Width="1000"
+        WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ToolBar Grid.Row="0">
+            <Button Content="Print" Command="{Binding PrintCommand}"/>
+            <Button Content="Export PDF" Command="{Binding ExportPdfCommand}"/>
+            <Button Content="Export Excel" Command="{Binding ExportExcelCommand}"/>
+            <Separator/>
+            <Button Content="First" Command="{Binding FirstPageCommand}"/>
+            <Button Content="Prev" Command="{Binding PrevPageCommand}"/>
+            <TextBlock Text="{Binding PageInfo}" VerticalAlignment="Center" Margin="5,0"/>
+            <Button Content="Next" Command="{Binding NextPageCommand}"/>
+            <Button Content="Last" Command="{Binding LastPageCommand}"/>
+            <Separator/>
+            <ComboBox Width="80" SelectedItem="{Binding SelectedZoom}" ItemsSource="{Binding ZoomLevels}"/>
+        </ToolBar>
+
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Border Background="White" Margin="20" Padding="20">
+                <Image Source="{Binding CurrentPageImage}" Stretch="None"/>
+            </Border>
+        </ScrollViewer>
+
+        <StatusBar Grid.Row="2">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

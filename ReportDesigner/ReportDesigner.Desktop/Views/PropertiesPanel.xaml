@@ -1,0 +1,97 @@
+<UserControl x:Class="ReportDesigner.Desktop.Views.PropertiesPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="280">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Properties" FontWeight="Bold" Margin="5" Background="#E0E0E0" Padding="5"/>
+        <TextBlock Grid.Row="1" Text="Selected Object" Margin="5,2" FontWeight="SemiBold"/>
+
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="5">
+                <GroupBox Header="Position and Size">
+                    <Grid Margin="5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Left:" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ObjectLeft, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Top:" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ObjectTop, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Width:" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding ObjectWidth, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Height:" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding ObjectHeight, UpdateSourceTrigger=PropertyChanged}"/>
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Header="Text Properties" Margin="0,5,0,0">
+                    <StackPanel Margin="5">
+                        <TextBlock Text="Name:"/>
+                        <TextBox Text="{Binding ObjectName, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Text="Text:" Margin="0,5,0,0"/>
+                        <TextBox Text="{Binding ObjectText, UpdateSourceTrigger=PropertyChanged}" 
+                                 TextWrapping="Wrap" AcceptsReturn="True" Height="60"/>
+
+                        <TextBlock Text="Data Binding:" Margin="0,5,0,0"/>
+                        <TextBox Text="{Binding ObjectDataBinding, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Text="Expression:" Margin="0,5,0,0"/>
+                        <TextBox Text="{Binding ObjectExpression, UpdateSourceTrigger=PropertyChanged}"
+                                 TextWrapping="Wrap" AcceptsReturn="True" Height="60"/>
+
+                        <TextBlock Text="Font:" Margin="0,5,0,0"/>
+                        <ComboBox Text="{Binding ObjectFontName}" IsEditable="True"/>
+
+                        <TextBlock Text="Size:" Margin="0,5,0,0"/>
+                        <TextBox Text="{Binding ObjectFontSize, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <CheckBox Content="Bold" IsChecked="{Binding ObjectBold}" Margin="0,5,0,0"/>
+                        <CheckBox Content="Italic" IsChecked="{Binding ObjectItalic}"/>
+
+                        <TextBlock Text="Color:" Margin="0,5,0,0"/>
+                        <TextBox Text="{Binding ObjectForeColor, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Border" Margin="0,5,0,0">
+                    <Grid Margin="5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <CheckBox Grid.Row="0" Grid.Column="0" Content="Left" IsChecked="{Binding ObjectBorderLeft}"/>
+                        <CheckBox Grid.Row="0" Grid.Column="1" Content="Right" IsChecked="{Binding ObjectBorderRight}"/>
+                        <CheckBox Grid.Row="1" Grid.Column="0" Content="Top" IsChecked="{Binding ObjectBorderTop}"/>
+                        <CheckBox Grid.Row="1" Grid.Column="1" Content="Bottom" IsChecked="{Binding ObjectBorderBottom}"/>
+                    </Grid>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

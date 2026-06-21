@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>MauiReportEngine.Renderer</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>YourName</Authors>
+    <Description>QuestPDF-based report renderer for MAUI</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MauiReportEngine.Core\MauiReportEngine.Core.csproj" />
+    <ProjectReference Include="..\..\ReportDesigner\ReportDesigner.Core\ReportDesigner.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="QuestPDF" Version="2026.10.0" />
+    <PackageReference Include="Scriban" Version="5.12.0" />
+  </ItemGroup>
+
+</Project>
