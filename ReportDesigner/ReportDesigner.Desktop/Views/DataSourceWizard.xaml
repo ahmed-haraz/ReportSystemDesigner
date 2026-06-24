@@ -59,7 +59,10 @@
 
         <!-- Columns -->
         <TextBlock Grid.Row="5" Text="Columns" FontWeight="Bold" Margin="5,2" Background="#E8E8E8" Padding="3"/>
-        <ListBox Grid.Row="6" ItemsSource="{Binding Columns}" Margin="5" MaxHeight="100">
+        <ListBox Grid.Row="6" ItemsSource="{Binding Columns}" Margin="5" MaxHeight="100"
+                 x:Name="ColumnsListBox"
+                 PreviewMouseLeftButtonDown="ColumnsListBox_PreviewMouseLeftButtonDown"
+                 MouseMove="ColumnsListBox_MouseMove">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
