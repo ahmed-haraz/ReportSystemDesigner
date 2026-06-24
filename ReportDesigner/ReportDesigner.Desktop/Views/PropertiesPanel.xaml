@@ -93,7 +93,8 @@
 
                 <!-- Text Properties -->
                 <GroupBox Header="Text Properties"
-                          Margin="0,5,0,0">
+                          Margin="0,5,0,0"
+                          Visibility="{Binding IsTextSelected, Converter={StaticResource BoolToVisibility}}">
                     <StackPanel Margin="5">
 
                         <TextBlock Text="Name:" />
@@ -188,6 +189,63 @@
                                     BorderBrush="Gray"
                                     BorderThickness="1" />
                         </Grid>
+                    </StackPanel>
+                </GroupBox>
+
+
+                <!-- Picture Properties -->
+                <GroupBox Header="Picture" Margin="0,5,0,0"
+                          Visibility="{Binding IsPictureSelected, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel Margin="5">
+                        <TextBlock Text="Image Source:" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0"
+                                     Text="{Binding PictureImageSource, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,2" />
+                            <Button Grid.Column="1"
+                                    Content="Browse..."
+                                    Command="{Binding BrowsePictureCommand}"
+                                    Margin="5,2,0,2"
+                                    Padding="8,2" />
+                        </Grid>
+                        <CheckBox Content="Keep aspect ratio"
+                                  IsChecked="{Binding PictureKeepAspectRatio}"
+                                  Margin="0,4,0,0" />
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Barcode Properties -->
+                <GroupBox Header="Barcode" Margin="0,5,0,0"
+                          Visibility="{Binding IsBarcodeSelected, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel Margin="5">
+                        <TextBlock Text="Barcode Type:" />
+                        <ComboBox SelectedItem="{Binding BarcodeType}" ItemsSource="{Binding BarcodeTypeOptions}" Margin="0,2" />
+                        <TextBlock Text="Data / Binding:" />
+                        <TextBox Text="{Binding BarcodeData, UpdateSourceTrigger=PropertyChanged}" Margin="0,2" />
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Shape Properties -->
+                <GroupBox Header="Shape" Margin="0,5,0,0"
+                          Visibility="{Binding IsShapeSelected, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel Margin="5">
+                        <TextBlock Text="Shape Type:" />
+                        <ComboBox SelectedItem="{Binding ShapeType}" ItemsSource="{Binding ShapeTypeOptions}" Margin="0,2" />
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Data Binding Help -->
+                <GroupBox Header="Data Binding" Margin="0,5,0,0">
+                    <StackPanel Margin="5">
+                        <TextBlock Text="Drag a column from the Data tab onto the canvas to create a bound text field automatically."
+                                   TextWrapping="Wrap"
+                                   Foreground="Gray" />
+                        <TextBlock Text="Field binding:" Margin="0,5,0,0" />
+                        <TextBox Text="{Binding ObjectDataBinding, UpdateSourceTrigger=PropertyChanged}" Margin="0,2" />
                     </StackPanel>
                 </GroupBox>
 

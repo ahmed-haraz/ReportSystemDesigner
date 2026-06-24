@@ -202,6 +202,17 @@ public partial class DesignViewModel : ObservableObject
         OnPropertyChanged(nameof(Bands));
     }
 
+    public void DropDataField(string dataBinding, string caption, Point position)
+    {
+        DropObject(ObjectType.Text, position);
+        if (SelectedObject == null) return;
+
+        SelectedObject.Text = string.IsNullOrWhiteSpace(caption) ? dataBinding : caption;
+        SelectedObject.DataBinding = dataBinding;
+        SelectedObject.Expression = string.IsNullOrWhiteSpace(dataBinding) ? string.Empty : $"[{dataBinding}]";
+        SelectedObject.Name = $"Field_{caption.Replace(" ", "_").Replace(".", "_")}";
+    }
+
     public void DropBand(BandType type, double position)
     {
         var band = new Band
@@ -269,7 +280,7 @@ public partial class DesignViewModel : ObservableObject
     {
         if (band == null) return;
         obj.Left = Math.Clamp(obj.Left, 0, Math.Max(0, PageWidth - obj.Width));
-        obj.Top = Math.Clamp(obj.Top, 0, Math.Max(0, band.Height - obj.Height));
+        obj.Top = Math.Clamp(obj.Top, -band.Top, Math.Max(-band.Top, PageHeight - band.Top - obj.Height));
     }
 
     private float GetDefaultBandHeight(BandType type)
