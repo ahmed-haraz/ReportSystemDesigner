@@ -1,7 +1,7 @@
+using ReportDesigner.Core.Models;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using ReportDesigner.Desktop.ViewModels;
 
 namespace ReportDesigner.Desktop.Views;
 

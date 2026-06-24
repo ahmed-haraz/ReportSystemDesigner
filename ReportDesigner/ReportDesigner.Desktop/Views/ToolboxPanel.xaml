@@ -1,44 +1,130 @@
 <UserControl x:Class="ReportDesigner.Desktop.Views.ToolboxPanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="250">
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="600"
+             d:DesignWidth="250">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Bands" FontWeight="Bold" Margin="5" Background="#E0E0E0" Padding="5"/>
-        <ListBox Grid.Row="1" x:Name="BandListBox" ItemsSource="{Binding BandTypes}" 
+        <!-- Bands Section -->
+        <Border Grid.Row="0"
+                Background="#E0E0E0"
+                Padding="5">
+            <Grid>
+                <TextBlock Text="Bands"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center" />
+                <Button Content="👁"
+                        Width="25"
+                        Height="25"
+                        HorizontalAlignment="Right"
+                        ToolTip="Toggle Hidden Bands"
+                        Command="{Binding ToggleShowHiddenBands}" />
+            </Grid>
+        </Border>
+
+        <ListBox Grid.Row="1"
+                 x:Name="BandListBox"
+                 ItemsSource="{Binding BandTypes}"
                  SelectedItem="{Binding SelectedBandType}"
                  PreviewMouseLeftButtonDown="BandListBox_PreviewMouseLeftButtonDown"
                  MouseMove="BandListBox_MouseMove">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Border Background="LightBlue" Padding="5" Margin="2" CornerRadius="3">
-                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                    <Border Background="LightBlue"
+                            Padding="5"
+                            Margin="2"
+                            CornerRadius="3"
+                            Visibility="{Binding IsVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Name}"
+                                       FontWeight="SemiBold" />
+                            <Button Grid.Column="1"
+                                    Content="✕"
+                                    Width="20"
+                                    Height="20"
+                                    Visibility="{Binding CanHide, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Command="{Binding DataContext.RemoveItemCommand, 
+                                              RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                    CommandParameter="{Binding}"
+                                    ToolTip="Remove from designer" />
+                        </Grid>
                     </Border>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <TextBlock Grid.Row="2" Text="Objects" FontWeight="Bold" Margin="5" Background="#E0E0E0" Padding="5"/>
-        <ListBox Grid.Row="3" x:Name="ObjectListBox" ItemsSource="{Binding ObjectTypes}" 
+        <!-- Objects Section -->
+        <Border Grid.Row="2"
+                Background="#E0E0E0"
+                Padding="5">
+            <TextBlock Text="Objects"
+                       FontWeight="Bold" />
+        </Border>
+
+        <ListBox Grid.Row="3"
+                 x:Name="ObjectListBox"
+                 ItemsSource="{Binding ObjectTypes}"
                  SelectedItem="{Binding SelectedObjectType}"
                  PreviewMouseLeftButtonDown="ObjectListBox_PreviewMouseLeftButtonDown"
                  MouseMove="ObjectListBox_MouseMove">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Border Background="LightGreen" Padding="5" Margin="2" CornerRadius="3">
-                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                    <Border Background="LightGreen"
+                            Padding="5"
+                            Margin="2"
+                            CornerRadius="3">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name}"
+                                           FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Description}"
+                                           FontSize="10"
+                                           Foreground="Gray"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Content="✕"
+                                    Width="20"
+                                    Height="20"
+                                    Visibility="{Binding CanRemove, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Command="{Binding DataContext.RemoveItemCommand, 
+                                              RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                    CommandParameter="{Binding}"
+                                    ToolTip="Remove from toolbox" />
+                        </Grid>
                     </Border>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+
+        <!-- NEW: Table Designer Button -->
+        <Button Grid.Row="4"
+                Content="Open Table Designer"
+                Margin="5"
+                Padding="10,5"
+                Background="#007ACC"
+                Foreground="White"
+                Command="{Binding OpenTableDesignerCommand}"
+                Visibility="{Binding SelectedObjectType.Type, 
+                           Converter={StaticResource StringEqualsToVisibilityConverter}, 
+                           ConverterParameter=Table}" />
     </Grid>
 </UserControl>

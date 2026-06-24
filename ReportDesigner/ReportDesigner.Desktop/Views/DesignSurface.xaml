@@ -1,215 +1,208 @@
 <UserControl x:Class="ReportDesigner.Desktop.Views.DesignSurface"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="clr-namespace:ReportDesigner.Desktop.ViewModels"
              mc:Ignorable="d"
              d:DesignHeight="842"
              d:DesignWidth="595">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="30" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
 
-        <Canvas Grid.Row="0"
-                Background="#F0F0F0"
-                x:Name="HorizontalRuler">
-            <StackPanel Orientation="Horizontal" Margin="5,2">
-                <TextBlock Text="Ruler" FontSize="10" Foreground="Gray" />
-                <TextBlock Text=" | drag bands/objects from the toolbox; objects snap to grid and can be moved anywhere inside a band" FontSize="10" Foreground="Gray" />
-            </StackPanel>
-        </Canvas>
+    <UserControl.Resources>
+        <!-- Context Menu for Bands -->
+        <ContextMenu x:Key="BandContextMenu">
+            <MenuItem Header="Delete Band"
+                      Command="{Binding RemoveBandCommand}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, 
+                                         RelativeSource={RelativeSource Self}}" />
+            <MenuItem Header="Toggle Visibility"
+                      Command="{Binding ToggleBandVisibilityCommand}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, 
+                                         RelativeSource={RelativeSource Self}}" />
+            <Separator />
+            <MenuItem Header="Move Up"
+                      Command="{Binding MoveBandUpCommand}" />
+            <MenuItem Header="Move Down"
+                      Command="{Binding MoveBandDownCommand}" />
+        </ContextMenu>
 
-        <ScrollViewer Grid.Row="1"
-                      HorizontalScrollBarVisibility="Auto"
-                      VerticalScrollBarVisibility="Auto"
-                      x:Name="DesignScrollViewer">
-            <Grid x:Name="PageContainer"
-                  Margin="50">
-                <Grid.LayoutTransform>
-                    <ScaleTransform ScaleX="{Binding Zoom}"
-                                    ScaleY="{Binding Zoom}" />
-                </Grid.LayoutTransform>
+        <!-- Context Menu for Objects -->
+        <ContextMenu x:Key="ObjectContextMenu">
+            <MenuItem Header="Delete"
+                      Command="{Binding RemoveObjectCommand}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, 
+                                         RelativeSource={RelativeSource Self}}" />
+            <MenuItem Header="Bring to Front"
+                      Command="{Binding BringToFrontCommand}" />
+            <MenuItem Header="Send to Back"
+                      Command="{Binding SendToBackCommand}" />
+            <Separator />
+            <MenuItem Header="Properties..."
+                      Command="{Binding ShowPropertiesCommand}" />
+        </ContextMenu>
 
-                <Border Background="#CCCCCC"
-                        Margin="5,5,0,0"
-                        Width="{Binding PageWidth}"
-                        Height="{Binding PageHeight}" />
+        <!-- Table Cell Context Menu -->
+        <ContextMenu x:Key="TableCellContextMenu">
+            <MenuItem Header="Bind Data Field..."
+                      Command="{Binding BindDataFieldCommand}" />
+            <MenuItem Header="Edit Cell Text"
+                      Command="{Binding EditCellTextCommand}" />
+            <Separator />
+            <MenuItem Header="Merge Right"
+                      Command="{Binding MergeCellRightCommand}" />
+            <MenuItem Header="Merge Down"
+                      Command="{Binding MergeCellDownCommand}" />
+            <MenuItem Header="Split Cell"
+                      Command="{Binding SplitCellCommand}" />
+        </ContextMenu>
+    </UserControl.Resources>
 
-                <Border Background="White"
-                        BorderBrush="#999999"
-                        BorderThickness="1"
-                        Width="{Binding PageWidth}"
-                        Height="{Binding PageHeight}"
-                        x:Name="PageBorder">
+    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Auto"
+                  Background="Gray">
+        <Grid>
+            <!-- Page Background -->
+            <Border Width="{Binding PageWidth}"
+                    Height="{Binding PageHeight}"
+                    Background="White"
+                    Margin="20">
 
-                    <Canvas x:Name="DesignCanvas"
-                            AllowDrop="True"
-                            Width="{Binding PageWidth}"
-                            Height="{Binding PageHeight}"
-                            Drop="DesignCanvas_Drop"
-                            DragOver="DesignCanvas_DragOver">
+                <!-- Grid for snapping -->
+                <Canvas x:Name="DesignCanvas"
+                        Background="Transparent"
+                        MouseMove="DesignCanvas_MouseMove"
+                        MouseLeftButtonDown="DesignCanvas_MouseLeftButtonDown"
+                        MouseLeftButtonUp="DesignCanvas_MouseLeftButtonUp"
+                        KeyDown="DesignCanvas_KeyDown"
+                        Focusable="True">
 
-                        <!-- Grid Lines -->
-                        <Canvas.Background>
-                            <DrawingBrush TileMode="Tile"
-                                          Viewport="0,0,20,20"
-                                          ViewportUnits="Absolute">
-                                <DrawingBrush.Drawing>
-                                    <GeometryDrawing>
-                                        <GeometryDrawing.Geometry>
-                                            <RectangleGeometry Rect="0,0,20,20" />
-                                        </GeometryDrawing.Geometry>
-                                        <GeometryDrawing.Pen>
-                                            <Pen Brush="#F0F0F0"
-                                                 Thickness="0.5" />
-                                        </GeometryDrawing.Pen>
-                                    </GeometryDrawing>
-                                </DrawingBrush.Drawing>
-                            </DrawingBrush>
-                        </Canvas.Background>
+                    <!-- Bands -->
+                    <ItemsControl ItemsSource="{Binding Bands}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border ContextMenu="{StaticResource BandContextMenu}"
+                                        Visibility="{Binding IsVisibleInDesigner, 
+                                                     Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background"
+                                                    Value="Transparent" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected}"
+                                                             Value="True">
+                                                    <Setter Property="Background"
+                                                            Value="#FFE0E8FF" />
+                                                    <Setter Property="BorderBrush"
+                                                            Value="#FF007ACC" />
+                                                    <Setter Property="BorderThickness"
+                                                            Value="2" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsVisibleInDesigner}"
+                                                             Value="False">
+                                                    <Setter Property="Visibility"
+                                                            Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
 
-                        <!-- Bands - rendered as direct Canvas children for proper hit testing -->
-                        <ItemsControl ItemsSource="{Binding Bands}"
-                                      x:Name="BandsItemsControl"
-                                      Width="{Binding PageWidth}"
-                                      Height="{Binding PageHeight}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemContainerStyle>
-                                <Style TargetType="ContentPresenter">
-                                    <Setter Property="Canvas.Top" Value="{Binding Top}" />
-                                    <Setter Property="Canvas.Left" Value="0" />
-                                </Style>
-                            </ItemsControl.ItemContainerStyle>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Opacity="0.5"
-                                            Height="{Binding Height}"
-                                            Width="{Binding DataContext.PageWidth, 
-                                                    RelativeSource={RelativeSource AncestorType=Canvas}}"
-                                            BorderBrush="#0066CC"
-                                            BorderThickness="1"
-                                            MouseLeftButtonDown="BandBorder_MouseLeftButtonDown"
-                                            Background="#E0F0FF">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsSelected}"
-                                                                 Value="True">
-                                                        <Setter Property="BorderBrush"
-                                                                Value="Red" />
-                                                        <Setter Property="BorderThickness"
-                                                                Value="2" />
-                                                        <Setter Property="Opacity"
-                                                                Value="0.7" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <TextBlock Text="{Binding Name}"
-                                                   VerticalAlignment="Top"
-                                                   HorizontalAlignment="Left"
-                                                   Margin="5,2"
-                                                   FontSize="10"
-                                                   Foreground="#0066CC"
-                                                   FontWeight="Bold"
-                                                   IsHitTestVisible="False" />
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                    <Grid>
+                                        <!-- Band Header -->
+                                        <Border Background="#FFF0F0F0"
+                                                Height="20"
+                                                VerticalAlignment="Top"
+                                                Cursor="SizeNS">
+                                            <TextBlock Text="{Binding DisplayName}"
+                                                       FontSize="10"
+                                                       Margin="5,2" />
+                                        </Border>
 
-                        <!-- Objects in Selected Band -->
-                        <ItemsControl ItemsSource="{Binding SelectedBand.Objects}"
-                                      x:Name="ObjectsItemsControl"
-                                      Canvas.Left="0"
-                                      Canvas.Top="{Binding SelectedBand.Top}"
-                                      Width="{Binding PageWidth}"
-                                      Height="{Binding SelectedBand.Height}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemContainerStyle>
-                                <Style TargetType="ContentPresenter">
-                                    <Setter Property="Canvas.Left" Value="{Binding Left}" />
-                                    <Setter Property="Canvas.Top" Value="{Binding Top}" />
-                                    <Setter Property="Panel.ZIndex" Value="{Binding ZIndex}" />
-                                </Style>
-                            </ItemsControl.ItemContainerStyle>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Width="{Binding Width}"
-                                            Height="{Binding Height}"
-                                            BorderBrush="Blue"
-                                            BorderThickness="1"
-                                            Background="White"
-                                            Cursor="SizeAll"
-                                            MouseLeftButtonDown="ObjectBorder_MouseLeftButtonDown"
-                                            MouseMove="ObjectBorder_MouseMove"
-                                            MouseLeftButtonUp="ObjectBorder_MouseLeftButtonUp">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsSelected}"
-                                                                 Value="True">
-                                                        <Setter Property="BorderBrush"
-                                                                Value="Red" />
-                                                        <Setter Property="BorderThickness"
-                                                                Value="2" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <Grid IsHitTestVisible="False">
-                                            <Image Source="{Binding PictureProps.ImageSource}"
-                                                   Stretch="Uniform"
-                                                   Margin="2">
-                                                <Image.Style>
-                                                    <Style TargetType="Image">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Type}" Value="Picture">
-                                                                <Setter Property="Visibility" Value="Visible" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Image.Style>
-                                            </Image>
-                                            <TextBlock Text="{Binding Text}"
-                                                       FontFamily="{Binding TextProps.FontName}"
-                                                       FontSize="{Binding TextProps.FontSize}"
-                                                       Foreground="Black"
-                                                       TextAlignment="Left"
-                                                       TextWrapping="Wrap"
-                                                       HorizontalAlignment="Stretch"
-                                                       VerticalAlignment="Stretch"
-                                                       Margin="2">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Visibility" Value="Visible" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Type}" Value="Picture">
-                                                                <Setter Property="Visibility" Value="Collapsed" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Canvas>
-                </Border>
-            </Grid>
-        </ScrollViewer>
-    </Grid>
+                                        <!-- Band Content Area -->
+                                        <Canvas Height="{Binding Height}"
+                                                Margin="0,20,0,0">
+                                            <!-- Objects -->
+                                            <ItemsControl ItemsSource="{Binding Objects}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border ContextMenu="{StaticResource ObjectContextMenu}"
+                                                                MouseLeftButtonDown="Object_MouseLeftButtonDown"
+                                                                MouseMove="Object_MouseMove">
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="BorderBrush"
+                                                                            Value="Transparent" />
+                                                                    <Setter Property="BorderThickness"
+                                                                            Value="1" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsSelected}"
+                                                                                     Value="True">
+                                                                            <Setter Property="BorderBrush"
+                                                                                    Value="Blue" />
+                                                                            <Setter Property="BorderThickness"
+                                                                                    Value="2" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+
+                                                            <!-- Object Content -->
+                                                            <ContentControl Content="{Binding}">
+                                                                <ContentControl.Resources>
+                                                                    <!-- Text Object Template -->
+                                                                    <DataTemplate DataType="{x:Type vm:ReportObject}">
+                                                                        <TextBlock Text="{Binding Text}"
+                                                                                   Width="{Binding Width}"
+                                                                                   Height="{Binding Height}" />
+                                                                    </DataTemplate>
+
+                                                                    <!-- Table Object Template -->
+                                                                    <DataTemplate DataType="{x:Type vm:TableObject}">
+                                                                        <Grid>
+                                                                            <Border BorderBrush="Black"
+                                                                                    BorderThickness="1"
+                                                                                    Background="#FFF8F8F8">
+                                                                                <ItemsControl ItemsSource="{Binding TableProps.Rows}">
+                                                                                    <ItemsControl.ItemTemplate>
+                                                                                        <DataTemplate>
+                                                                                            <StackPanel Orientation="Horizontal">
+                                                                                                <ItemsControl ItemsSource="{Binding Cells}">
+                                                                                                    <ItemsControl.ItemTemplate>
+                                                                                                        <DataTemplate>
+                                                                                                            <Border BorderBrush="Gray"
+                                                                                                                    BorderThickness="0.5"
+                                                                                                                    Width="{Binding Width}"
+                                                                                                                    Height="{Binding Height}"
+                                                                                                                    ContextMenu="{StaticResource TableCellContextMenu}"
+                                                                                                                    Background="{Binding IsHeaderCell, 
+                                                                                                                               Converter={StaticResource BoolToBrushConverter}, 
+                                                                                                                               ConverterParameter=#FFE0E0E0}">
+                                                                                                                <TextBlock Text="{Binding Text}"
+                                                                                                                           Margin="2" />
+                                                                                                            </Border>
+                                                                                                        </DataTemplate>
+                                                                                                    </ItemsControl.ItemTemplate>
+                                                                                                </ItemsControl>
+                                                                                            </StackPanel>
+                                                                                        </DataTemplate>
+                                                                                    </ItemsControl.ItemTemplate>
+                                                                                </ItemsControl>
+                                                                            </Border>
+                                                                        </Grid>
+                                                                    </DataTemplate>
+                                                                </ContentControl.Resources>
+                                                            </ContentControl>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Canvas>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Canvas>
+            </Border>
+        </Grid>
+    </ScrollViewer>
 </UserControl>

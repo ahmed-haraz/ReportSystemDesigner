@@ -18,7 +18,27 @@ public partial class DesignSurface : UserControl
     public DesignSurface()
     {
         InitializeComponent();
+        Loaded += (s, e) => DesignCanvas.Focus();
     }
+
+    private void DesignCanvas_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Delete)
+        {
+            var vm = DataContext as ViewModels.DesignViewModel;
+            if (vm?.SelectedObject != null)
+            {
+                vm.RemoveObject(vm.SelectedObject);
+                e.Handled = true;
+            }
+            else if (vm?.SelectedBand != null)
+            {
+                vm.RemoveBand(vm.SelectedBand);
+                e.Handled = true;
+            }
+        }
+    }
+
 
     // ====== DROP FROM TOOLBOX ======
 

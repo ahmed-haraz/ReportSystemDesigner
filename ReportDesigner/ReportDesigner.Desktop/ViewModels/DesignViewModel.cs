@@ -41,6 +41,10 @@ public partial class DesignViewModel : ObservableObject
     [ObservableProperty]
     private Point _dragCurrent;
 
+    // NEW: Show/hide bands in designer
+    [ObservableProperty]
+    private bool _showHiddenBands = true;
+
     partial void OnSelectedBandChanged(Band? value)
     {
         if (value != null)
@@ -89,7 +93,9 @@ public partial class DesignViewModel : ObservableObject
             Type = type,
             Name = $"{type}Band{Bands.Count(b => b.Type == type) + 1}",
             Top = CalculateBandTop(),
-            Height = GetDefaultBandHeight(type)
+            Height = GetDefaultBandHeight(type),
+            Visible = true,
+            IsVisibleInDesigner = true
         };
 
         Bands.Add(band);
@@ -112,17 +118,33 @@ public partial class DesignViewModel : ObservableObject
         RecalculateBandPositions();
     }
 
+
+    [RelayCommand]
+    public void ToggleBandVisibility(Band? band)
+    {
+        if (band == null) return;
+        band.IsVisibleInDesigner = !band.IsVisibleInDesigner;
+        OnPropertyChanged(nameof(Bands));
+        RecalculateBandPositions();
+    }
+
     [RelayCommand]
     private void AddObject(ObjectType type)
     {
         if (SelectedBand == null)
         {
-            MessageBox.Show("Please select a band first.", "Add Object", 
+            MessageBox.Show("Please select a band first.", "Add Object",
                 MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         var obj = CreateDefaultObject(type, SelectedBand.Objects.Count + 1);
+
+        // NEW: Special handling for Table objects
+        if (type == ObjectType.Table)
+        {
+            InitializeTableObject(obj);
+        }
 
         SelectedBand.Objects.Add(obj);
         SelectedObject = obj;
@@ -144,7 +166,23 @@ public partial class DesignViewModel : ObservableObject
         OnPropertyChanged(nameof(Bands));
     }
 
-    // Manual methods (not RelayCommand) - called directly from code-behind
+    // NEW: Remove object from any band
+    public void RemoveObjectFromAnyBand(ReportObject? obj)
+    {
+        if (obj == null) return;
+
+        var parentBand = Bands.FirstOrDefault(b => b.Objects.Contains(obj));
+        if (parentBand != null)
+        {
+            parentBand.Objects.Remove(obj);
+            if (SelectedObject == obj)
+            {
+                SelectedObject = null;
+            }
+            OnPropertyChanged(nameof(Bands));
+        }
+    }
+
     public void MoveObject(ReportObject obj, double deltaX, double deltaY)
     {
         obj.Left = Snap((float)(obj.Left + deltaX));
@@ -196,6 +234,12 @@ public partial class DesignViewModel : ObservableObject
         obj.Top = Snap(pageY - targetBand.Top);
         ClampObjectToBand(obj, targetBand);
 
+        // NEW: Initialize table if dropped
+        if (type == ObjectType.Table)
+        {
+            InitializeTableObject(obj);
+        }
+
         targetBand.Objects.Add(obj);
         SelectedObject = obj;
 
@@ -213,6 +257,20 @@ public partial class DesignViewModel : ObservableObject
         SelectedObject.Name = $"Field_{caption.Replace(" ", "_").Replace(".", "_")}";
     }
 
+    // NEW: Drop data field into table cell
+    public void DropDataFieldToTableCell(TableCell cell, string dataBinding, string caption)
+    {
+        if (cell == null) return;
+
+        cell.DataField = dataBinding;
+        cell.ColumnName = caption;
+        cell.Text = string.IsNullOrWhiteSpace(caption) ? dataBinding : caption;
+        cell.Expression = $"[{dataBinding}]";
+        cell.DataBinding = dataBinding;
+
+        OnPropertyChanged(nameof(Bands));
+    }
+
     public void DropBand(BandType type, double position)
     {
         var band = new Band
@@ -220,7 +278,9 @@ public partial class DesignViewModel : ObservableObject
             Type = type,
             Name = $"{type}Band{Bands.Count(b => b.Type == type) + 1}",
             Top = (float)(position / Zoom),
-            Height = GetDefaultBandHeight(type)
+            Height = GetDefaultBandHeight(type),
+            Visible = true,
+            IsVisibleInDesigner = true
         };
 
         Bands.Add(band);
@@ -232,19 +292,89 @@ public partial class DesignViewModel : ObservableObject
     private float CalculateBandTop()
     {
         if (!Bands.Any()) return 0;
-        return Bands.Max(b => b.Top + b.Height) + 10;
+        return Bands.Where(b => b.IsVisibleInDesigner).Max(b => b.Top + b.Height) + 10;
     }
 
     private void RecalculateBandPositions()
     {
         float currentTop = 0;
-        foreach (var band in Bands.OrderBy(b => b.Top))
+        foreach (var band in Bands.OrderBy(b => b.Top).Where(b => b.IsVisibleInDesigner))
         {
             band.Top = currentTop;
             currentTop += band.Height + 2;
         }
 
         OnPropertyChanged(nameof(Bands));
+    }
+
+    // NEW: Initialize table with default structure
+    private void InitializeTableObject(ReportObject tableObj)
+    {
+        tableObj.TableProps = new TableProperties
+        {
+            RowCount = 3,
+            ColumnCount = 3,
+            RepeatHeaderRow = true,
+            AutoWidth = true
+        };
+
+        // Create header row
+        var headerRow = new TableRow
+        {
+            Height = 25,
+            IsHeader = true
+        };
+
+        for (int c = 0; c < 3; c++)
+        {
+            var cell = new TableCell
+            {
+                RowIndex = 0,
+                ColumnIndex = c,
+                Width = 100,
+                Height = 25,
+                IsHeaderCell = true,
+                HeaderText = $"Column {c + 1}",
+                Text = $"Column {c + 1}",
+                Name = $"HeaderCell_{c}",
+                Left = c * 100,
+                Top = 0
+            };
+            headerRow.Cells.Add(cell);
+        }
+        tableObj.TableProps.Rows.Add(headerRow);
+
+        // Create data rows
+        for (int r = 1; r < 3; r++)
+        {
+            var row = new TableRow { Height = 20 };
+            for (int c = 0; c < 3; c++)
+            {
+                var cell = new TableCell
+                {
+                    RowIndex = r,
+                    ColumnIndex = c,
+                    Width = 100,
+                    Height = 20,
+                    Name = $"Cell_{r}_{c}",
+                    Left = c * 100,
+                    Top = r * 20
+                };
+                row.Cells.Add(cell);
+            }
+            tableObj.TableProps.Rows.Add(row);
+        }
+
+        // Create columns
+        for (int c = 0; c < 3; c++)
+        {
+            tableObj.TableProps.Columns.Add(new TableColumn
+            {
+                Width = 100,
+                AutoSize = true,
+                FieldName = $"Column{c}"
+            });
+        }
     }
 
     private ReportObject CreateDefaultObject(ObjectType type, int index)
@@ -264,7 +394,11 @@ public partial class DesignViewModel : ObservableObject
         if (type == ObjectType.Picture) obj.PictureProps = new PictureProperties();
         if (type == ObjectType.Barcode) obj.BarcodeProps = new BarcodeProperties();
         if (type == ObjectType.Shape) obj.ShapeProps = new ShapeProperties();
-        if (type == ObjectType.Table) obj.TableProps = new TableProperties();
+        if (type == ObjectType.Table)
+        {
+            obj.TableProps = new TableProperties();
+            InitializeTableObject(obj);
+        }
 
         return obj;
     }
@@ -326,4 +460,5 @@ public partial class DesignViewModel : ObservableObject
             _ => 20
         };
     }
+
 }

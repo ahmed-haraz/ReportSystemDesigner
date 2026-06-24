@@ -1,8 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ReportDesigner.Core.Models;
+using ReportDesigner.Desktop.Services;
 using System.Collections.ObjectModel;
-using System.Windows;
 
 namespace ReportDesigner.Desktop.ViewModels;
 
@@ -26,11 +26,16 @@ public partial class ToolboxViewModel : ObservableObject
     [ObservableProperty]
     private bool _isDraggingObject;
 
+    // NEW: Event for requesting item removal
+    public event EventHandler<RemoveItemRequestEventArgs>? RemoveItemRequested;
+
+
     public ToolboxViewModel()
     {
         InitializeBandTypes();
         InitializeObjectTypes();
     }
+
 
     private void InitializeBandTypes()
     {
@@ -42,7 +47,8 @@ public partial class ToolboxViewModel : ObservableObject
                 Type = type.ToString(),
                 Icon = "/Icons/Band.png",
                 IsBand = true,
-                Description = GetBandDescription(type)
+                Description = GetBandDescription(type),
+                CanHide = true // NEW
             });
         }
     }
@@ -57,7 +63,8 @@ public partial class ToolboxViewModel : ObservableObject
                 Type = type.ToString(),
                 Icon = $"/Icons/{type}.png",
                 IsBand = false,
-                Description = GetObjectDescription(type)
+                Description = GetObjectDescription(type),
+                CanRemove = true // NEW
             });
         }
     }
@@ -76,7 +83,19 @@ public partial class ToolboxViewModel : ObservableObject
         SelectedBandType = null;
     }
 
-    // Manual methods - called from code-behind
+    // NEW: Remove item command
+    [RelayCommand]
+    private void RemoveItem(ToolboxItem? item)
+    {
+        if (item == null) return;
+
+        RemoveItemRequested?.Invoke(this, new RemoveItemRequestEventArgs
+        {
+            Item = item,
+            IsBand = item.IsBand
+        });
+    }
+
     public void StartBandDrag(string typeName)
     {
         SelectedBandType = BandTypes.FirstOrDefault(b => b.Type == typeName);
@@ -116,21 +135,11 @@ public partial class ToolboxViewModel : ObservableObject
             ObjectType.Line => "Horizontal or vertical line",
             ObjectType.Shape => "Rectangle, ellipse, etc.",
             ObjectType.Barcode => "Barcode (Code128, QR, etc.)",
-            ObjectType.Table => "Data-bound table",
+            ObjectType.Table => "Data-bound table with cells", // UPDATED
             ObjectType.Chart => "Chart/graph",
             ObjectType.Subreport => "Nested report",
             _ => "Object"
         };
     }
-}
 
-public class ToolboxItem
-{
-    public string Name { get; set; } = "";
-    public string Type { get; set; } = "";
-    public string Icon { get; set; } = "";
-    public bool IsBand { get; set; }
-    public string Description { get; set; } = "";
-    public ObjectType ObjectType => Enum.Parse<ObjectType>(Type);
-    public BandType BandType => Enum.Parse<BandType>(Type);
 }

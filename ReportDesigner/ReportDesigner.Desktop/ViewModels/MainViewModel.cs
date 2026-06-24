@@ -258,14 +258,25 @@ public partial class MainViewModel : ObservableObject
     {
         if (CurrentReport.Bands.Count == 0)
         {
-            MessageBox.Show("Report has no bands to preview.", "Preview", 
+            MessageBox.Show("Report has no bands to preview.", "Preview",
                 MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
+        // NEW: Sync current state to report before preview
+        CurrentReport.Bands = DesignViewModel.Bands.ToList();
+        CurrentReport.DataSources = DataSourceViewModel.DataSources.ToList();
+
+        // Ensure report has page settings
+        if (CurrentReport.Page == null)
+        {
+            CurrentReport.Page = new PageSettings();
+            CurrentReport.Page.ApplyPreset(SelectedPaperName, SelectedPageOrientation);
+        }
+
         var previewWindow = new Views.PreviewWindow(CurrentReport);
         previewWindow.Show();
-        StatusMessage = "Preview opened";
+        StatusMessage = "Preview opened with sample data";
     }
 
     [RelayCommand]
