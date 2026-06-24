@@ -7,6 +7,7 @@ using DataColumn = ReportDesigner.Core.Models.DataColumn;
 
 namespace ReportDesigner.Desktop.Services;
 
+
 public class ConnectionWizard
 {
     public async Task<DataSource> CreateSQLiteConnectionAsync(string dbPath)

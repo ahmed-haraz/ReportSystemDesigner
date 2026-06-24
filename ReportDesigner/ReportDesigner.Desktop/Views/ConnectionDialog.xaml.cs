@@ -2,6 +2,7 @@ using System.Windows;
 using Microsoft.Data.Sqlite;
 using System.Data.SqlClient;
 using System.Windows.Controls;
+using ReportDesigner.Core.Models;
 
 namespace ReportDesigner.Desktop.Views;
 
@@ -14,6 +15,9 @@ public partial class ConnectionDialog : Window
     public ConnectionDialog()
     {
         InitializeComponent();
+        cmbOtherProvider.ItemsSource = Enum.GetNames(typeof(DataSourceType));
+        cmbOtherProvider.SelectedItem = DataSourceType.Json.ToString();
+        txtOtherConnectionString.Text = DataSourceCatalog.Get(DataSourceType.Json).ConnectionStringExample;
     }
 
     private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -136,6 +140,16 @@ public partial class ConnectionDialog : Window
 
             ConnectionString = builder.ConnectionString;
             SelectedDataSourceType = "SqlServer";
+        }
+        else if (selectedTab?.Header?.ToString() == "Other")
+        {
+            SelectedDataSourceType = cmbOtherProvider.Text;
+            ConnectionString = txtOtherConnectionString.Text;
+        }
+        else if (selectedTab?.Header?.ToString() is { } providerName && Enum.TryParse<DataSourceType>(providerName, out var providerType))
+        {
+            SelectedDataSourceType = providerType.ToString();
+            ConnectionString = DataSourceCatalog.Get(providerType).ConnectionStringExample;
         }
 
         DialogResult = true;

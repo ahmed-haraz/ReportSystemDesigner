@@ -34,6 +34,9 @@ public partial class DataSourceViewModel : ObservableObject
     private string _selectedTable = "";
 
     [ObservableProperty]
+    private ObservableCollection<DataSourceDefinition> _availableDataSources = new(DataSourceCatalog.All);
+
+    [ObservableProperty]
     private string _statusMessage = "";
 
     partial void OnSelectedDataSourceChanged(DataSource? value)
@@ -57,9 +60,9 @@ public partial class DataSourceViewModel : ObservableObject
             var ds = new DataSource
             {
                 Name = $"DataSource{DataSources.Count + 1}",
-                Type = dialog.SelectedDataSourceType == "SQLite" 
-                    ? DataSourceType.SQLite : DataSourceType.SqlServer,
-                ConnectionString = dialog.ConnectionString ?? "Data Source=app.db",
+                Type = Enum.TryParse<DataSourceType>(dialog.SelectedDataSourceType, out var selectedType)
+                    ? selectedType : DataSourceType.SQLite,
+                ConnectionString = dialog.ConnectionString ?? DataSourceCatalog.Get(DataSourceType.SQLite).ConnectionStringExample,
                 SelectCommand = "SELECT * FROM YourTable",
                 Enabled = true
             };
@@ -108,7 +111,7 @@ public partial class DataSourceViewModel : ObservableObject
                     result = await TestSqlServerConnectionAsync(SelectedDataSource.ConnectionString);
                     break;
                 default:
-                    MessageBox.Show($"Testing not yet implemented for {SelectedDataSource.Type}", 
+                    MessageBox.Show($"Direct test is not implemented for {SelectedDataSource.Type}. Add a runtime provider in MAUI using provider key/source options.",
                         "Test Connection", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
             }
@@ -225,6 +228,9 @@ public partial class DataSourceViewModel : ObservableObject
                 case DataSourceType.SqlServer:
                     await DiscoverSqlServerTablesAsync(dataSource);
                     break;
+                default:
+                    StatusMessage = $"Schema discovery for {dataSource.Type} is configured as runtime/manual.";
+                    return;
             }
 
             StatusMessage = $"Discovered {Tables.Count} tables/views";
