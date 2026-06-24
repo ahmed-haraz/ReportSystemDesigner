@@ -24,9 +24,9 @@ public partial class DesignSurface : UserControl
 
     private void DesignCanvas_DragOver(object sender, DragEventArgs e)
     {
-        if (e.Data.GetDataPresent("BandType") || e.Data.GetDataPresent("ObjectType"))
+        if (e.Data.GetDataPresent("BandType") || e.Data.GetDataPresent("ObjectType") || e.Data.GetDataPresent("DataColumn"))
         {
-            e.Effects = DragDropEffects.Move;
+            e.Effects = e.Data.GetDataPresent("DataColumn") ? DragDropEffects.Copy : DragDropEffects.Move;
             e.Handled = true;
         }
     }
@@ -37,24 +37,21 @@ public partial class DesignSurface : UserControl
         var vm = DataContext as DesignViewModel;
         if (vm == null) return;
 
-        var adjustedX = position.X / vm.Zoom;
-        var adjustedY = position.Y / vm.Zoom;
-
         if (e.Data.GetData("BandType") is BandType bandType)
         {
-            vm.DropBand(bandType, adjustedY);
+            vm.DropBand(bandType, position.Y);
+            e.Handled = true;
+        }
+        else if (e.Data.GetDataPresent("DataColumn"))
+        {
+            var binding = e.Data.GetData("DataColumn")?.ToString() ?? string.Empty;
+            var caption = e.Data.GetData("DataColumnName")?.ToString() ?? binding;
+            vm.DropDataField(binding, caption, position);
             e.Handled = true;
         }
         else if (e.Data.GetData("ObjectType") is ObjectType objectType)
         {
-            if (vm.SelectedBand == null)
-            {
-                MessageBox.Show("Please select a band first by clicking on it, then drag objects onto it.", 
-                    "Add Object", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            vm.DropObject(objectType, new Point(adjustedX, adjustedY));
+            vm.DropObject(objectType, position);
             e.Handled = true;
         }
     }
@@ -130,20 +127,18 @@ public partial class DesignSurface : UserControl
                 newTop = Math.Round(newTop / vm.GridSize) * vm.GridSize;
             }
 
-            // Keep within the selected band while allowing free placement anywhere inside it.
+            // Keep inside the page, but allow free movement across band boundaries.
+            var selectedBandTop = vm.SelectedBand?.Top ?? 0;
+            var minTop = -selectedBandTop;
+            var maxTop = vm.PageHeight - selectedBandTop - _draggedObject.Height;
             if (newLeft < 0) newLeft = 0;
-            if (newTop < 0) newTop = 0;
             if (newLeft + _draggedObject.Width > vm.PageWidth)
                 newLeft = vm.PageWidth - _draggedObject.Width;
-            if (vm.SelectedBand != null && newTop + _draggedObject.Height > vm.SelectedBand.Height)
-                newTop = vm.SelectedBand.Height - _draggedObject.Height;
+            if (newTop < minTop) newTop = minTop;
+            if (newTop > maxTop) newTop = maxTop;
 
             _draggedObject.Left = (float)newLeft;
             _draggedObject.Top = (float)newTop;
-
-            // Update Canvas position directly
-            _draggedBorder.SetValue(Canvas.LeftProperty, newLeft);
-            _draggedBorder.SetValue(Canvas.TopProperty, newTop);
 
             // Update properties panel live
             UpdatePropertiesPanel(_draggedObject);

@@ -55,6 +55,9 @@ public class ReportObject : INotifyPropertyChanged
     public ShapeProperties ShapeProps { get; set; }
     public SubreportProperties SubreportProps { get; set; }
 
+    public void NotifyPropertyChanged(string propertyName) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
     protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(storage, value))

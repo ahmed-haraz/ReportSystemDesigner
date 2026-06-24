@@ -127,8 +127,10 @@
                         <!-- Objects in Selected Band -->
                         <ItemsControl ItemsSource="{Binding SelectedBand.Objects}"
                                       x:Name="ObjectsItemsControl"
+                                      Canvas.Left="0"
+                                      Canvas.Top="{Binding SelectedBand.Top}"
                                       Width="{Binding PageWidth}"
-                                      Height="{Binding PageHeight}">
+                                      Height="{Binding SelectedBand.Height}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas />
@@ -165,16 +167,42 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
-                                        <TextBlock Text="{Binding Text}"
-                                                   FontFamily="{Binding TextProps.FontName}"
-                                                   FontSize="{Binding TextProps.FontSize}"
-                                                   Foreground="Black"
-                                                   TextAlignment="Left"
-                                                   TextWrapping="Wrap"
-                                                   HorizontalAlignment="Stretch"
-                                                   VerticalAlignment="Stretch"
-                                                   Margin="2"
-                                                   IsHitTestVisible="False" />
+                                        <Grid IsHitTestVisible="False">
+                                            <Image Source="{Binding PictureProps.ImageSource}"
+                                                   Stretch="Uniform"
+                                                   Margin="2">
+                                                <Image.Style>
+                                                    <Style TargetType="Image">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Type}" Value="Picture">
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Image.Style>
+                                            </Image>
+                                            <TextBlock Text="{Binding Text}"
+                                                       FontFamily="{Binding TextProps.FontName}"
+                                                       FontSize="{Binding TextProps.FontSize}"
+                                                       Foreground="Black"
+                                                       TextAlignment="Left"
+                                                       TextWrapping="Wrap"
+                                                       HorizontalAlignment="Stretch"
+                                                       VerticalAlignment="Stretch"
+                                                       Margin="2">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Type}" Value="Picture">
+                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

@@ -13,6 +13,13 @@ public partial class PropertiesViewModel : ObservableObject
     private Band? _selectedBand;
 
     public bool HasSelectedObject => SelectedObject != null;
+    public bool IsTextSelected => SelectedObject?.Type is ObjectType.Text or ObjectType.RichText or ObjectType.Html;
+    public bool IsPictureSelected => SelectedObject?.Type == ObjectType.Picture;
+    public bool IsBarcodeSelected => SelectedObject?.Type == ObjectType.Barcode;
+    public bool IsShapeSelected => SelectedObject?.Type == ObjectType.Shape;
+    public bool IsTableSelected => SelectedObject?.Type == ObjectType.Table;
+    public IReadOnlyList<BarcodeType> BarcodeTypeOptions { get; } = Enum.GetValues<BarcodeType>();
+    public IReadOnlyList<ShapeType> ShapeTypeOptions { get; } = Enum.GetValues<ShapeType>();
 
     // Position properties
     [ObservableProperty]
@@ -100,9 +107,29 @@ public partial class PropertiesViewModel : ObservableObject
     [ObservableProperty]
     private bool _objectVisible = true;
 
+    [ObservableProperty]
+    private string _pictureImageSource = "";
+
+    [ObservableProperty]
+    private bool _pictureKeepAspectRatio = true;
+
+    [ObservableProperty]
+    private string _barcodeData = "";
+
+    [ObservableProperty]
+    private BarcodeType _barcodeType = BarcodeType.Code128;
+
+    [ObservableProperty]
+    private ShapeType _shapeType = ShapeType.Rectangle;
+
     partial void OnSelectedObjectChanged(ReportObject? value)
     {
         OnPropertyChanged(nameof(HasSelectedObject));
+        OnPropertyChanged(nameof(IsTextSelected));
+        OnPropertyChanged(nameof(IsPictureSelected));
+        OnPropertyChanged(nameof(IsBarcodeSelected));
+        OnPropertyChanged(nameof(IsShapeSelected));
+        OnPropertyChanged(nameof(IsTableSelected));
 
         if (value != null)
         {
@@ -141,6 +168,11 @@ public partial class PropertiesViewModel : ObservableObject
     partial void OnObjectCanGrowChanged(bool value) => UpdateObjectProperty(o => o.CanGrow = value);
     partial void OnObjectCanShrinkChanged(bool value) => UpdateObjectProperty(o => o.CanShrink = value);
     partial void OnObjectVisibleChanged(bool value) => UpdateObjectProperty(o => o.Visible = value);
+    partial void OnPictureImageSourceChanged(string value) => UpdatePictureProperty(p => p.ImageSource = value);
+    partial void OnPictureKeepAspectRatioChanged(bool value) => UpdatePictureProperty(p => p.KeepAspectRatio = value);
+    partial void OnBarcodeDataChanged(string value) => UpdateBarcodeProperty(p => p.Data = value);
+    partial void OnBarcodeTypeChanged(BarcodeType value) => UpdateBarcodeProperty(p => p.BarcodeType = value);
+    partial void OnShapeTypeChanged(ShapeType value) => UpdateShapeProperty(p => p.ShapeType = value);
 
     public void LoadObjectProperties(ReportObject obj)
     {
@@ -179,6 +211,12 @@ public partial class PropertiesViewModel : ObservableObject
             ObjectBorderWidth = obj.Border.Width;
             ObjectBorderColor = obj.Border.Color;
         }
+
+        PictureImageSource = obj.PictureProps?.ImageSource ?? string.Empty;
+        PictureKeepAspectRatio = obj.PictureProps?.KeepAspectRatio ?? true;
+        BarcodeData = obj.BarcodeProps?.Data ?? string.Empty;
+        BarcodeType = obj.BarcodeProps?.BarcodeType ?? BarcodeType.Code128;
+        ShapeType = obj.ShapeProps?.ShapeType ?? ShapeType.Rectangle;
     }
 
     private void ClearObjectProperties()
@@ -210,6 +248,11 @@ public partial class PropertiesViewModel : ObservableObject
         ObjectCanGrow = true;
         ObjectCanShrink = false;
         ObjectVisible = true;
+        PictureImageSource = "";
+        PictureKeepAspectRatio = true;
+        BarcodeData = "";
+        BarcodeType = BarcodeType.Code128;
+        ShapeType = ShapeType.Rectangle;
     }
 
     private void UpdateObjectProperty(Action<ReportObject> update)
@@ -238,6 +281,52 @@ public partial class PropertiesViewModel : ObservableObject
         {
             SelectedObject.Border = new BorderProperties();
             update(SelectedObject.Border);
+        }
+    }
+
+    private void UpdatePictureProperty(Action<PictureProperties> update)
+    {
+        if (SelectedObject == null) return;
+        SelectedObject.PictureProps ??= new PictureProperties();
+        update(SelectedObject.PictureProps);
+        SelectedObject.NotifyPropertyChanged(nameof(ReportObject.PictureProps));
+        SelectedObject.Text = string.IsNullOrWhiteSpace(SelectedObject.PictureProps.ImageSource)
+            ? "[Picture]"
+            : System.IO.Path.GetFileName(SelectedObject.PictureProps.ImageSource);
+    }
+
+    private void UpdateBarcodeProperty(Action<BarcodeProperties> update)
+    {
+        if (SelectedObject == null) return;
+        SelectedObject.BarcodeProps ??= new BarcodeProperties();
+        update(SelectedObject.BarcodeProps);
+        SelectedObject.NotifyPropertyChanged(nameof(ReportObject.BarcodeProps));
+        SelectedObject.Text = string.IsNullOrWhiteSpace(SelectedObject.BarcodeProps.Data)
+            ? "[Barcode]"
+            : SelectedObject.BarcodeProps.Data;
+    }
+
+    private void UpdateShapeProperty(Action<ShapeProperties> update)
+    {
+        if (SelectedObject == null) return;
+        SelectedObject.ShapeProps ??= new ShapeProperties();
+        update(SelectedObject.ShapeProps);
+        SelectedObject.NotifyPropertyChanged(nameof(ReportObject.ShapeProps));
+        SelectedObject.Text = SelectedObject.ShapeProps.ShapeType.ToString();
+    }
+
+    [RelayCommand]
+    private void BrowsePicture()
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = "Image files (*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.webp)|*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.webp|All files (*.*)|*.*",
+            Title = "Select report image"
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            PictureImageSource = dialog.FileName;
         }
     }
 
