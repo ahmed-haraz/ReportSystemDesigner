@@ -3,77 +3,68 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:conv="clr-namespace:ReportDesigner.Desktop.Converters"
         mc:Ignorable="d"
-        Title="Report Preview"
-        Height="600"
-        Width="900"
+        Title="Report Preview" 
+        Height="800" Width="1000"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <conv:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
+        <conv:BoolToFontWeightConverter x:Key="BoolToFontWeightConverter"/>
+        <conv:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+        <conv:ScaleTransformConverter x:Key="ScaleTransformConverter"/>
     </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Toolbar -->
         <ToolBarTray Grid.Row="0">
             <ToolBar>
-                <Button Content="◄"
-                        Command="{Binding PreviousPageCommand}"
-                        ToolTip="Previous Page" />
-                <TextBlock Text="{Binding CurrentPage}"
-                           VerticalAlignment="Center"
-                           Margin="5,0" />
-                <TextBlock Text=" / "
-                           VerticalAlignment="Center" />
-                <TextBlock Text="{Binding TotalPages}"
-                           VerticalAlignment="Center"
-                           Margin="5,0" />
-                <Button Content="►"
-                        Command="{Binding NextPageCommand}"
-                        ToolTip="Next Page" />
-                <Separator />
-                <Button Content="-"
-                        Command="{Binding ZoomOutCommand}"
-                        ToolTip="Zoom Out" />
-                <TextBlock Text="{Binding Zoom, StringFormat={}{0:P0}}"
-                           VerticalAlignment="Center"
-                           Margin="5,0" />
-                <Button Content="+"
-                        Command="{Binding ZoomInCommand}"
-                        ToolTip="Zoom In" />
-                <Separator />
-                <Button Content="Fit Width"
-                        Command="{Binding FitToWidthCommand}" />
-                <Separator />
-                <Button Content="🖨 Print"
-                        Command="{Binding PrintCommand}" />
-                <Button Content="💾 Save PDF"
-                        Command="{Binding SavePdfCommand}" />
+                <Button Content="◄" Command="{Binding PreviousPageCommand}" 
+                        ToolTip="Previous Page"/>
+                <TextBlock Text="{Binding CurrentPage}" 
+                           VerticalAlignment="Center" Margin="5,0"/>
+                <TextBlock Text=" / " VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding TotalPages}" 
+                           VerticalAlignment="Center" Margin="5,0"/>
+                <Button Content="►" Command="{Binding NextPageCommand}" 
+                        ToolTip="Next Page"/>
+                <Separator/>
+                <Button Content="-" Command="{Binding ZoomOutCommand}" 
+                        ToolTip="Zoom Out"/>
+                <TextBlock Text="{Binding Zoom, StringFormat={}{0:P0}}" 
+                           VerticalAlignment="Center" Margin="5,0"/>
+                <Button Content="+" Command="{Binding ZoomInCommand}" 
+                        ToolTip="Zoom In"/>
+                <Separator/>
+                <Button Content="Fit Width" Command="{Binding FitToWidthCommand}"/>
+                <Separator/>
+                <Button Content="🖨 Print" Command="{Binding PrintCommand}"/>
+                <Button Content="💾 Save PDF" Command="{Binding SavePdfCommand}"/>
             </ToolBar>
         </ToolBarTray>
 
         <!-- Status Bar -->
-        <Border Grid.Row="1"
-                Background="#FFF0F0F0"
-                Padding="5">
-            <TextBlock Text="{Binding StatusMessage}"
-                       Foreground="{Binding IsGenerating, Converter={StaticResource BoolToBrushConverter}}" />
+        <Border Grid.Row="1" Background="#FFF0F0F0" Padding="5">
+            <TextBlock Text="{Binding StatusMessage}" 
+                       Foreground="Black"/>
         </Border>
 
         <!-- Preview Canvas -->
-        <ScrollViewer Grid.Row="2"
+        <ScrollViewer Grid.Row="2" 
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto"
                       Background="DarkGray">
 
-            <Border Background="White"
+            <Border Background="White" 
                     Margin="20"
                     Width="{Binding Report.Page.Width}"
                     Height="{Binding Report.Page.Height}"
@@ -82,54 +73,57 @@
                 <ItemsControl ItemsSource="{Binding CurrentPreviewPage.Objects}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <Canvas />
+                            <Canvas/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
 
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <!-- Rendered Object -->
-                            <Border Canvas.Left="{Binding Left}"
+                            <Canvas Canvas.Left="{Binding Left}"
                                     Canvas.Top="{Binding Top}"
                                     Width="{Binding Width}"
-                                    Height="{Binding Height}"
-                                    Background="{Binding IsBandBackground, 
-                                                 Converter={StaticResource BoolToBrushConverter}, 
-                                                 ConverterParameter=#FFF8F8F8}">
+                                    Height="{Binding Height}">
+                                <Border Width="{Binding Width}"
+                                        Height="{Binding Height}"
+                                        Background="{Binding IsBandBackground, 
+                                                     Converter={StaticResource BoolToBrushConverter}, 
+                                                     ConverterParameter=#FFF8F8F8}">
+                                    <Grid>
+                                        <TextBlock Text="{Binding Text}"
+                                                   FontFamily="{Binding FontName}"
+                                                   FontSize="{Binding FontSize}"
+                                                   FontWeight="{Binding Bold, Converter={StaticResource BoolToFontWeightConverter}}"
+                                                   TextWrapping="Wrap"/>
 
-                                <TextBlock Text="{Binding Text}"
-                                           FontFamily="{Binding FontName}"
-                                           FontSize="{Binding FontSize}"
-                                           FontWeight="{Binding Bold, Converter={StaticResource BoolToFontWeightConverter}}"
-                                           TextWrapping="Wrap" />
-
-                                <!-- Table Cells Overlay -->
-                                <ItemsControl ItemsSource="{Binding TableCells}"
-                                              Visibility="{Binding TableCells.Count, 
-                                                           Converter={StaticResource CountToVisibilityConverter}}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <Canvas />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Canvas.Left="{Binding Left}"
-                                                    Canvas.Top="{Binding Top}"
-                                                    Width="{Binding Width}"
-                                                    Height="{Binding Height}"
-                                                    BorderBrush="Black"
-                                                    BorderThickness="0.5"
-                                                    Background="{Binding IsHeader, 
-                                                                 Converter={StaticResource BoolToBrushConverter}, 
-                                                                 ConverterParameter=#FFE0E0E0}">
-                                                <TextBlock Text="{Binding Text}"
-                                                           Margin="2" />
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Border>
+                                        <!-- Table Cells Overlay -->
+                                        <ItemsControl ItemsSource="{Binding TableCells}"
+                                                      Visibility="{Binding TableCells.Count, 
+                                                                   Converter={StaticResource CountToVisibilityConverter}}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <Canvas/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Canvas.Left="{Binding Left}"
+                                                            Canvas.Top="{Binding Top}"
+                                                            Width="{Binding Width}"
+                                                            Height="{Binding Height}"
+                                                            BorderBrush="Black"
+                                                            BorderThickness="0.5"
+                                                            Background="{Binding IsHeader, 
+                                                                         Converter={StaticResource BoolToBrushConverter}, 
+                                                                         ConverterParameter=#FFE0E0E0}">
+                                                        <TextBlock Text="{Binding Text}"
+                                                                   Margin="2"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Grid>
+                                </Border>
+                            </Canvas>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
@@ -137,13 +131,11 @@
         </ScrollViewer>
 
         <!-- Sample Data Panel -->
-        <Expander Grid.Row="3"
-                  Header="Sample Data"
-                  IsExpanded="False">
-            <DataGrid ItemsSource="{Binding SampleData}"
+        <Expander Grid.Row="3" Header="Sample Data" IsExpanded="False">
+            <DataGrid ItemsSource="{Binding SampleData}" 
                       AutoGenerateColumns="True"
                       Height="150"
-                      IsReadOnly="True" />
+                      IsReadOnly="True"/>
         </Expander>
     </Grid>
 </Window>

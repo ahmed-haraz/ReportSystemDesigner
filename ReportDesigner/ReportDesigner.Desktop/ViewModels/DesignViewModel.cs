@@ -41,7 +41,6 @@ public partial class DesignViewModel : ObservableObject
     [ObservableProperty]
     private Point _dragCurrent;
 
-    // NEW: Show/hide bands in designer
     [ObservableProperty]
     private bool _showHiddenBands = true;
 
@@ -118,7 +117,6 @@ public partial class DesignViewModel : ObservableObject
         RecalculateBandPositions();
     }
 
-
     [RelayCommand]
     public void ToggleBandVisibility(Band? band)
     {
@@ -126,6 +124,30 @@ public partial class DesignViewModel : ObservableObject
         band.IsVisibleInDesigner = !band.IsVisibleInDesigner;
         OnPropertyChanged(nameof(Bands));
         RecalculateBandPositions();
+    }
+
+    [RelayCommand]
+    public void MoveBandUp(Band? band)
+    {
+        if (band == null) return;
+        var idx = Bands.IndexOf(band);
+        if (idx > 0)
+        {
+            Bands.Move(idx, idx - 1);
+            RecalculateBandPositions();
+        }
+    }
+
+    [RelayCommand]
+    public void MoveBandDown(Band? band)
+    {
+        if (band == null) return;
+        var idx = Bands.IndexOf(band);
+        if (idx >= 0 && idx < Bands.Count - 1)
+        {
+            Bands.Move(idx, idx + 1);
+            RecalculateBandPositions();
+        }
     }
 
     [RelayCommand]
@@ -140,7 +162,6 @@ public partial class DesignViewModel : ObservableObject
 
         var obj = CreateDefaultObject(type, SelectedBand.Objects.Count + 1);
 
-        // NEW: Special handling for Table objects
         if (type == ObjectType.Table)
         {
             InitializeTableObject(obj);
@@ -166,7 +187,6 @@ public partial class DesignViewModel : ObservableObject
         OnPropertyChanged(nameof(Bands));
     }
 
-    // NEW: Remove object from any band
     public void RemoveObjectFromAnyBand(ReportObject? obj)
     {
         if (obj == null) return;
@@ -181,6 +201,66 @@ public partial class DesignViewModel : ObservableObject
             }
             OnPropertyChanged(nameof(Bands));
         }
+    }
+
+    [RelayCommand]
+    public void BringToFront(ReportObject? obj)
+    {
+        if (obj == null) return;
+        var maxZ = Bands.SelectMany(b => b.Objects).Max(o => o.ZIndex);
+        obj.ZIndex = maxZ + 1;
+    }
+
+    [RelayCommand]
+    public void SendToBack(ReportObject? obj)
+    {
+        if (obj == null) return;
+        var minZ = Bands.SelectMany(b => b.Objects).Min(o => o.ZIndex);
+        obj.ZIndex = minZ - 1;
+    }
+
+    [RelayCommand]
+    public void ShowProperties(ReportObject? obj)
+    {
+        // Properties are shown in the properties panel
+        if (obj != null)
+            SelectedObject = obj;
+    }
+
+    [RelayCommand]
+    public void BindDataField(TableCell? cell)
+    {
+        if (cell == null) return;
+        // Open data field binding dialog
+    }
+
+    [RelayCommand]
+    public void EditCellText(TableCell? cell)
+    {
+        if (cell == null) return;
+        // Open cell text editor
+    }
+
+    [RelayCommand]
+    public void MergeCellRight(TableCell? cell)
+    {
+        if (cell == null) return;
+        cell.ColumnSpan++;
+    }
+
+    [RelayCommand]
+    public void MergeCellDown(TableCell? cell)
+    {
+        if (cell == null) return;
+        cell.RowSpan++;
+    }
+
+    [RelayCommand]
+    public void SplitCell(TableCell? cell)
+    {
+        if (cell == null) return;
+        cell.RowSpan = 1;
+        cell.ColumnSpan = 1;
     }
 
     public void MoveObject(ReportObject obj, double deltaX, double deltaY)
@@ -234,7 +314,6 @@ public partial class DesignViewModel : ObservableObject
         obj.Top = Snap(pageY - targetBand.Top);
         ClampObjectToBand(obj, targetBand);
 
-        // NEW: Initialize table if dropped
         if (type == ObjectType.Table)
         {
             InitializeTableObject(obj);
@@ -257,7 +336,6 @@ public partial class DesignViewModel : ObservableObject
         SelectedObject.Name = $"Field_{caption.Replace(" ", "_").Replace(".", "_")}";
     }
 
-    // NEW: Drop data field into table cell
     public void DropDataFieldToTableCell(TableCell cell, string dataBinding, string caption)
     {
         if (cell == null) return;
@@ -292,7 +370,8 @@ public partial class DesignViewModel : ObservableObject
     private float CalculateBandTop()
     {
         if (!Bands.Any()) return 0;
-        return Bands.Where(b => b.IsVisibleInDesigner).Max(b => b.Top + b.Height) + 10;
+        var visibleBands = Bands.Where(b => b.IsVisibleInDesigner);
+        return visibleBands.Any() ? visibleBands.Max(b => b.Top + b.Height) + 10 : 0;
     }
 
     private void RecalculateBandPositions()
@@ -307,7 +386,6 @@ public partial class DesignViewModel : ObservableObject
         OnPropertyChanged(nameof(Bands));
     }
 
-    // NEW: Initialize table with default structure
     private void InitializeTableObject(ReportObject tableObj)
     {
         tableObj.TableProps = new TableProperties
@@ -318,11 +396,10 @@ public partial class DesignViewModel : ObservableObject
             AutoWidth = true
         };
 
-        // Create header row
-        var headerRow = new TableRow
-        {
-            Height = 25,
-            IsHeader = true
+        var headerRow = new TableRow 
+        { 
+            Height = 25, 
+            IsHeader = true 
         };
 
         for (int c = 0; c < 3; c++)
@@ -344,7 +421,6 @@ public partial class DesignViewModel : ObservableObject
         }
         tableObj.TableProps.Rows.Add(headerRow);
 
-        // Create data rows
         for (int r = 1; r < 3; r++)
         {
             var row = new TableRow { Height = 20 };
@@ -365,7 +441,6 @@ public partial class DesignViewModel : ObservableObject
             tableObj.TableProps.Rows.Add(row);
         }
 
-        // Create columns
         for (int c = 0; c < 3; c++)
         {
             tableObj.TableProps.Columns.Add(new TableColumn
@@ -394,7 +469,7 @@ public partial class DesignViewModel : ObservableObject
         if (type == ObjectType.Picture) obj.PictureProps = new PictureProperties();
         if (type == ObjectType.Barcode) obj.BarcodeProps = new BarcodeProperties();
         if (type == ObjectType.Shape) obj.ShapeProps = new ShapeProperties();
-        if (type == ObjectType.Table)
+        if (type == ObjectType.Table) 
         {
             obj.TableProps = new TableProperties();
             InitializeTableObject(obj);
@@ -460,5 +535,4 @@ public partial class DesignViewModel : ObservableObject
             _ => 20
         };
     }
-
 }

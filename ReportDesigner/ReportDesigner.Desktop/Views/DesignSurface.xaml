@@ -1,68 +1,86 @@
 <UserControl x:Class="ReportDesigner.Desktop.Views.DesignSurface"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:vm="clr-namespace:ReportDesigner.Desktop.ViewModels"
-             mc:Ignorable="d"
-             d:DesignHeight="842"
-             d:DesignWidth="595">
+             xmlns:core="clr-namespace:ReportDesigner.Core.Models;assembly=ReportDesigner.Core"
+             xmlns:conv="clr-namespace:ReportDesigner.Desktop.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="842" d:DesignWidth="595">
 
     <UserControl.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
         <!-- Context Menu for Bands -->
         <ContextMenu x:Key="BandContextMenu">
-            <MenuItem Header="Delete Band"
-                      Command="{Binding RemoveBandCommand}"
+            <MenuItem Header="Delete Band" 
+                      Command="{Binding RemoveBandCommand}" 
                       CommandParameter="{Binding PlacementTarget.DataContext, 
-                                         RelativeSource={RelativeSource Self}}" />
-            <MenuItem Header="Toggle Visibility"
+                                         RelativeSource={RelativeSource Self}}"/>
+            <MenuItem Header="Toggle Visibility" 
                       Command="{Binding ToggleBandVisibilityCommand}"
                       CommandParameter="{Binding PlacementTarget.DataContext, 
-                                         RelativeSource={RelativeSource Self}}" />
-            <Separator />
-            <MenuItem Header="Move Up"
-                      Command="{Binding MoveBandUpCommand}" />
-            <MenuItem Header="Move Down"
-                      Command="{Binding MoveBandDownCommand}" />
+                                         RelativeSource={RelativeSource Self}}"/>
+            <Separator/>
+            <MenuItem Header="Move Up" Command="{Binding MoveBandUpCommand}"/>
+            <MenuItem Header="Move Down" Command="{Binding MoveBandDownCommand}"/>
         </ContextMenu>
 
         <!-- Context Menu for Objects -->
         <ContextMenu x:Key="ObjectContextMenu">
-            <MenuItem Header="Delete"
-                      Command="{Binding RemoveObjectCommand}"
+            <MenuItem Header="Delete" 
+                      Command="{Binding RemoveObjectCommand}" 
                       CommandParameter="{Binding PlacementTarget.DataContext, 
-                                         RelativeSource={RelativeSource Self}}" />
-            <MenuItem Header="Bring to Front"
-                      Command="{Binding BringToFrontCommand}" />
-            <MenuItem Header="Send to Back"
-                      Command="{Binding SendToBackCommand}" />
-            <Separator />
-            <MenuItem Header="Properties..."
-                      Command="{Binding ShowPropertiesCommand}" />
+                                         RelativeSource={RelativeSource Self}}"/>
+            <MenuItem Header="Bring to Front" Command="{Binding BringToFrontCommand}"/>
+            <MenuItem Header="Send to Back" Command="{Binding SendToBackCommand}"/>
+            <Separator/>
+            <MenuItem Header="Properties..." Command="{Binding ShowPropertiesCommand}"/>
         </ContextMenu>
 
         <!-- Table Cell Context Menu -->
         <ContextMenu x:Key="TableCellContextMenu">
-            <MenuItem Header="Bind Data Field..."
-                      Command="{Binding BindDataFieldCommand}" />
-            <MenuItem Header="Edit Cell Text"
-                      Command="{Binding EditCellTextCommand}" />
-            <Separator />
-            <MenuItem Header="Merge Right"
-                      Command="{Binding MergeCellRightCommand}" />
-            <MenuItem Header="Merge Down"
-                      Command="{Binding MergeCellDownCommand}" />
-            <MenuItem Header="Split Cell"
-                      Command="{Binding SplitCellCommand}" />
+            <MenuItem Header="Bind Data Field..." Command="{Binding BindDataFieldCommand}"/>
+            <MenuItem Header="Edit Cell Text" Command="{Binding EditCellTextCommand}"/>
+            <Separator/>
+            <MenuItem Header="Merge Right" Command="{Binding MergeCellRightCommand}"/>
+            <MenuItem Header="Merge Down" Command="{Binding MergeCellDownCommand}"/>
+            <MenuItem Header="Split Cell" Command="{Binding SplitCellCommand}"/>
         </ContextMenu>
+
+        <!-- Style for Band Visibility -->
+        <Style x:Key="BandBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter Property="Background" Value="#FFE0E8FF"/>
+                    <Setter Property="BorderBrush" Value="#FF007ACC"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Style for Object Selection -->
+        <Style x:Key="ObjectBorderStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter Property="BorderBrush" Value="Blue"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
-    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" 
                   VerticalScrollBarVisibility="Auto"
                   Background="Gray">
         <Grid>
             <!-- Page Background -->
-            <Border Width="{Binding PageWidth}"
+            <Border Width="{Binding PageWidth}" 
                     Height="{Binding PageHeight}"
                     Background="White"
                     Margin="20">
@@ -79,119 +97,66 @@
                     <!-- Bands -->
                     <ItemsControl ItemsSource="{Binding Bands}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border ContextMenu="{StaticResource BandContextMenu}"
+                            <DataTemplate DataType="{x:Type core:Band}">
+                                <Border Style="{StaticResource BandBorderStyle}"
+                                        ContextMenu="{StaticResource BandContextMenu}"
                                         Visibility="{Binding IsVisibleInDesigner, 
                                                      Converter={StaticResource BoolToVisibilityConverter}}">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background"
-                                                    Value="Transparent" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsSelected}"
-                                                             Value="True">
-                                                    <Setter Property="Background"
-                                                            Value="#FFE0E8FF" />
-                                                    <Setter Property="BorderBrush"
-                                                            Value="#FF007ACC" />
-                                                    <Setter Property="BorderThickness"
-                                                            Value="2" />
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding IsVisibleInDesigner}"
-                                                             Value="False">
-                                                    <Setter Property="Visibility"
-                                                            Value="Collapsed" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-
                                     <Grid>
                                         <!-- Band Header -->
-                                        <Border Background="#FFF0F0F0"
-                                                Height="20"
+                                        <Border Background="#FFF0F0F0" 
+                                                Height="20" 
                                                 VerticalAlignment="Top"
                                                 Cursor="SizeNS">
-                                            <TextBlock Text="{Binding DisplayName}"
-                                                       FontSize="10"
-                                                       Margin="5,2" />
+                                            <Grid>
+                                                <TextBlock Text="{Binding DisplayName}" 
+                                                           FontSize="10" 
+                                                           Margin="5,2"
+                                                           VerticalAlignment="Center"/>
+                                                <Button Content="👁" 
+                                                        HorizontalAlignment="Right"
+                                                        Width="20" Height="18"
+                                                        Margin="0,0,2,0"
+                                                        Command="{Binding DataContext.ToggleBandVisibilityCommand,
+                                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        ToolTip="Toggle Visibility"/>
+                                            </Grid>
                                         </Border>
 
                                         <!-- Band Content Area -->
-                                        <Canvas Height="{Binding Height}"
+                                        <Canvas Height="{Binding Height}" 
                                                 Margin="0,20,0,0">
                                             <!-- Objects -->
                                             <ItemsControl ItemsSource="{Binding Objects}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <Canvas/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Border ContextMenu="{StaticResource ObjectContextMenu}"
+                                                    <DataTemplate DataType="{x:Type core:ReportObject}">
+                                                        <Canvas Canvas.Left="{Binding Left}" 
+                                                                Canvas.Top="{Binding Top}"
+                                                                Width="{Binding Width}"
+                                                                Height="{Binding Height}"
+                                                                ContextMenu="{StaticResource ObjectContextMenu}"
                                                                 MouseLeftButtonDown="Object_MouseLeftButtonDown"
                                                                 MouseMove="Object_MouseMove">
-                                                            <Border.Style>
-                                                                <Style TargetType="Border">
-                                                                    <Setter Property="BorderBrush"
-                                                                            Value="Transparent" />
-                                                                    <Setter Property="BorderThickness"
-                                                                            Value="1" />
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding IsSelected}"
-                                                                                     Value="True">
-                                                                            <Setter Property="BorderBrush"
-                                                                                    Value="Blue" />
-                                                                            <Setter Property="BorderThickness"
-                                                                                    Value="2" />
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </Border.Style>
 
-                                                            <!-- Object Content -->
-                                                            <ContentControl Content="{Binding}">
-                                                                <ContentControl.Resources>
-                                                                    <!-- Text Object Template -->
-                                                                    <DataTemplate DataType="{x:Type vm:ReportObject}">
-                                                                        <TextBlock Text="{Binding Text}"
-                                                                                   Width="{Binding Width}"
-                                                                                   Height="{Binding Height}" />
-                                                                    </DataTemplate>
-
-                                                                    <!-- Table Object Template -->
-                                                                    <DataTemplate DataType="{x:Type vm:TableObject}">
-                                                                        <Grid>
-                                                                            <Border BorderBrush="Black"
-                                                                                    BorderThickness="1"
-                                                                                    Background="#FFF8F8F8">
-                                                                                <ItemsControl ItemsSource="{Binding TableProps.Rows}">
-                                                                                    <ItemsControl.ItemTemplate>
-                                                                                        <DataTemplate>
-                                                                                            <StackPanel Orientation="Horizontal">
-                                                                                                <ItemsControl ItemsSource="{Binding Cells}">
-                                                                                                    <ItemsControl.ItemTemplate>
-                                                                                                        <DataTemplate>
-                                                                                                            <Border BorderBrush="Gray"
-                                                                                                                    BorderThickness="0.5"
-                                                                                                                    Width="{Binding Width}"
-                                                                                                                    Height="{Binding Height}"
-                                                                                                                    ContextMenu="{StaticResource TableCellContextMenu}"
-                                                                                                                    Background="{Binding IsHeaderCell, 
-                                                                                                                               Converter={StaticResource BoolToBrushConverter}, 
-                                                                                                                               ConverterParameter=#FFE0E0E0}">
-                                                                                                                <TextBlock Text="{Binding Text}"
-                                                                                                                           Margin="2" />
-                                                                                                            </Border>
-                                                                                                        </DataTemplate>
-                                                                                                    </ItemsControl.ItemTemplate>
-                                                                                                </ItemsControl>
-                                                                                            </StackPanel>
-                                                                                        </DataTemplate>
-                                                                                    </ItemsControl.ItemTemplate>
-                                                                                </ItemsControl>
-                                                                            </Border>
-                                                                        </Grid>
-                                                                    </DataTemplate>
-                                                                </ContentControl.Resources>
-                                                            </ContentControl>
-                                                        </Border>
+                                                            <Border Style="{StaticResource ObjectBorderStyle}"
+                                                                    Width="{Binding Width}"
+                                                                    Height="{Binding Height}">
+                                                                <!-- Content based on object type -->
+                                                                <ContentControl Content="{Binding}" 
+                                                                                Width="{Binding Width}"
+                                                                                Height="{Binding Height}">
+                                                                    <ContentControl.ContentTemplateSelector>
+                                                                        <conv:ReportObjectTemplateSelector/>
+                                                                    </ContentControl.ContentTemplateSelector>
+                                                                </ContentControl>
+                                                            </Border>
+                                                        </Canvas>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
@@ -200,6 +165,11 @@
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
                     </ItemsControl>
                 </Canvas>
             </Border>

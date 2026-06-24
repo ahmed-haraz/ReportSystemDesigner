@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ReportDesigner.Core.Models;
-using ReportDesigner.Desktop.Services;
 using System.Collections.ObjectModel;
 
 namespace ReportDesigner.Desktop.ViewModels;
@@ -26,16 +25,11 @@ public partial class ToolboxViewModel : ObservableObject
     [ObservableProperty]
     private bool _isDraggingObject;
 
-    // NEW: Event for requesting item removal
-    public event EventHandler<RemoveItemRequestEventArgs>? RemoveItemRequested;
-
-
     public ToolboxViewModel()
     {
         InitializeBandTypes();
         InitializeObjectTypes();
     }
-
 
     private void InitializeBandTypes()
     {
@@ -48,7 +42,7 @@ public partial class ToolboxViewModel : ObservableObject
                 Icon = "/Icons/Band.png",
                 IsBand = true,
                 Description = GetBandDescription(type),
-                CanHide = true // NEW
+                CanHide = true
             });
         }
     }
@@ -64,7 +58,7 @@ public partial class ToolboxViewModel : ObservableObject
                 Icon = $"/Icons/{type}.png",
                 IsBand = false,
                 Description = GetObjectDescription(type),
-                CanRemove = true // NEW
+                CanRemove = true
             });
         }
     }
@@ -83,17 +77,39 @@ public partial class ToolboxViewModel : ObservableObject
         SelectedBandType = null;
     }
 
-    // NEW: Remove item command
     [RelayCommand]
     private void RemoveItem(ToolboxItem? item)
     {
         if (item == null) return;
 
-        RemoveItemRequested?.Invoke(this, new RemoveItemRequestEventArgs
+        if (item.IsBand)
         {
-            Item = item,
-            IsBand = item.IsBand
-        });
+            var bandItem = BandTypes.FirstOrDefault(b => b.Type == item.Type);
+            if (bandItem != null)
+            {
+                bandItem.IsVisible = false;
+                BandTypes.Remove(bandItem);
+            }
+        }
+        else
+        {
+            var objItem = ObjectTypes.FirstOrDefault(o => o.Type == item.Type);
+            if (objItem != null)
+            {
+                objItem.IsVisible = false;
+                ObjectTypes.Remove(objItem);
+            }
+        }
+    }
+
+    [RelayCommand]
+    private void OpenTableDesigner()
+    {
+        // Open table designer dialog
+        if (SelectedObjectType?.Type == "Table")
+        {
+            // Table designer would open here
+        }
     }
 
     public void StartBandDrag(string typeName)
@@ -135,11 +151,25 @@ public partial class ToolboxViewModel : ObservableObject
             ObjectType.Line => "Horizontal or vertical line",
             ObjectType.Shape => "Rectangle, ellipse, etc.",
             ObjectType.Barcode => "Barcode (Code128, QR, etc.)",
-            ObjectType.Table => "Data-bound table with cells", // UPDATED
+            ObjectType.Table => "Data-bound table with cells",
             ObjectType.Chart => "Chart/graph",
             ObjectType.Subreport => "Nested report",
             _ => "Object"
         };
     }
+}
 
+public class ToolboxItem
+{
+    public string Name { get; set; } = "";
+    public string Type { get; set; } = "";
+    public string Icon { get; set; } = "";
+    public bool IsBand { get; set; }
+    public string Description { get; set; } = "";
+    public bool CanHide { get; set; }
+    public bool CanRemove { get; set; }
+    public bool IsVisible { get; set; } = true;
+
+    public ObjectType ObjectType => Enum.Parse<ObjectType>(Type);
+    public BandType BandType => Enum.Parse<BandType>(Type);
 }

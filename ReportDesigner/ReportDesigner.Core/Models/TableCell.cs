@@ -1,4 +1,4 @@
-﻿namespace ReportDesigner.Core.Models;
+namespace ReportDesigner.Core.Models;
 
 public class TableCell : ReportObject
 {

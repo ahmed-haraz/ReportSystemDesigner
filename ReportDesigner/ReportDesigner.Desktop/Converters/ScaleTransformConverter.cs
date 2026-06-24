@@ -1,20 +1,16 @@
 using System;
-using System.Collections;
 using System.Globalization;
-using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace ReportDesigner.Desktop.Converters;
 
-public class CountToVisibilityConverter : IValueConverter
+public class ScaleTransformConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is int count)
-            return count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        if (value is ICollection col)
-            return col.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        return Visibility.Collapsed;
+        double scale = value is double d ? d : 1.0;
+        return new ScaleTransform(scale, scale);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -27,13 +27,13 @@ public class Band
     public List<ReportObject> Objects { get; set; } = new();
     public List<Band> ChildBands { get; set; } = new();
 
-    // NEW: Band visibility
+    // NEW: Band visibility properties
     public bool Visible { get; set; } = true;
     public string VisibleExpression { get; set; } = string.Empty;
 
     // Layout helpers
     public bool IsSelected { get; set; }
     public bool IsExpanded { get; set; } = true;
-    public bool IsVisibleInDesigner { get; set; } = true; // NEW: Hide in designer
+    public bool IsVisibleInDesigner { get; set; } = true;
     public string DisplayName => $"{Type}Band_{Name}";
 }

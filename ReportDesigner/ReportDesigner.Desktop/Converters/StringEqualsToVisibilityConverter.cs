@@ -1,20 +1,18 @@
 using System;
-using System.Collections;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
 namespace ReportDesigner.Desktop.Converters;
 
-public class CountToVisibilityConverter : IValueConverter
+[ValueConversion(typeof(string), typeof(Visibility))]
+public class StringEqualsToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is int count)
-            return count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        if (value is ICollection col)
-            return col.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        return Visibility.Collapsed;
+        string? strValue = value?.ToString();
+        string? compareTo = parameter?.ToString();
+        return strValue == compareTo ? Visibility.Visible : Visibility.Collapsed;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -32,10 +32,8 @@ public partial class PreviewViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasData = false;
 
-    // Sample data for preview before saving
     [ObservableProperty]
     private ObservableCollection<Dictionary<string, object>> _sampleData = new();
-
 
     public PreviewViewModel(ReportTemplate report)
     {
@@ -48,21 +46,17 @@ public partial class PreviewViewModel : ObservableObject
     {
         if (value >= 1 && value <= TotalPages)
         {
-            // Update displayed page
             OnPropertyChanged(nameof(CurrentPreviewPage));
         }
     }
 
-
-    public PreviewPage? CurrentPreviewPage =>
+    public PreviewPage? CurrentPreviewPage => 
         Pages.FirstOrDefault(p => p.PageNumber == CurrentPage);
 
-    // NEW: Generate sample data for preview
     private void GenerateSampleData()
     {
         SampleData.Clear();
 
-        // Generate 5 sample rows based on data sources
         for (int i = 1; i <= 5; i++)
         {
             var row = new Dictionary<string, object>
@@ -80,7 +74,6 @@ public partial class PreviewViewModel : ObservableObject
         HasData = SampleData.Count > 0;
     }
 
-    // NEW: Generate preview pages with actual rendering simulation
     [RelayCommand]
     private async Task GeneratePreviewAsync()
     {
@@ -95,11 +88,10 @@ public partial class PreviewViewModel : ObservableObject
 
         try
         {
-            await Task.Delay(100); // Allow UI update
+            await Task.Delay(100);
 
             Pages.Clear();
 
-            // Simulate page generation
             var page = new PreviewPage
             {
                 PageNumber = 1,
@@ -110,7 +102,6 @@ public partial class PreviewViewModel : ObservableObject
 
             foreach (var band in Report.Bands.Where(b => b.Visible && b.IsVisibleInDesigner))
             {
-                // Render band background
                 page.Objects.Add(new RenderedObject
                 {
                     Left = 0,
@@ -122,7 +113,6 @@ public partial class PreviewViewModel : ObservableObject
                     BandName = band.Name
                 });
 
-                // Render band objects
                 foreach (var obj in band.Objects.Where(o => o.Visible))
                 {
                     var renderedObj = new RenderedObject
@@ -139,7 +129,6 @@ public partial class PreviewViewModel : ObservableObject
                         ObjectType = obj.Type.ToString()
                     };
 
-                    // Special handling for table cells
                     if (obj.Type == ObjectType.Table && obj.TableProps != null)
                     {
                         renderedObj.TableCells = RenderTableCells(obj, currentY);
@@ -168,22 +157,18 @@ public partial class PreviewViewModel : ObservableObject
         }
     }
 
-    // NEW: Resolve expressions with sample data
     private string ResolveExpression(string expression, string defaultText)
     {
         if (string.IsNullOrEmpty(expression))
             return defaultText;
 
-        // Simple expression resolution for preview
         var result = expression;
 
-        // Replace field references with sample data
         foreach (var data in SampleData.FirstOrDefault() ?? new Dictionary<string, object>())
         {
             result = result.Replace($"[{data.Key}]", data.Value?.ToString() ?? "");
         }
 
-        // Replace system variables
         result = result.Replace("[Date]", DateTime.Now.ToShortDateString());
         result = result.Replace("[Page#]", "1");
         result = result.Replace("[TotalPages#]", "1");
@@ -192,7 +177,6 @@ public partial class PreviewViewModel : ObservableObject
         return result;
     }
 
-    // NEW: Render table cells for preview
     private List<RenderedTableCell> RenderTableCells(ReportObject tableObj, float bandTop)
     {
         var cells = new List<RenderedTableCell>();
@@ -264,7 +248,56 @@ public partial class PreviewViewModel : ObservableObject
     [RelayCommand]
     private void FitToWidth()
     {
-        Zoom = 1.0; // Calculate based on viewport
+        Zoom = 1.0;
     }
 
+    [RelayCommand]
+    private void Print()
+    {
+        MessageBox.Show("Print dialog would open here.", "Print",
+            MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    [RelayCommand]
+    private void SavePdf()
+    {
+        MessageBox.Show("Save PDF dialog would open here.", "Save PDF",
+            MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+}
+
+public class PreviewPage
+{
+    public int PageNumber { get; set; }
+    public byte[]? ImageData { get; set; }
+    public List<RenderedObject> Objects { get; set; } = new();
+}
+
+public class RenderedObject
+{
+    public float Left { get; set; }
+    public float Top { get; set; }
+    public float Width { get; set; }
+    public float Height { get; set; }
+    public string Text { get; set; } = "";
+    public string FontName { get; set; } = "Arial";
+    public float FontSize { get; set; } = 10;
+    public bool Bold { get; set; }
+    public string DataBinding { get; set; } = "";
+    public string ObjectType { get; set; } = "Text";
+    public bool IsBandBackground { get; set; }
+    public string BandName { get; set; } = "";
+    public List<RenderedTableCell> TableCells { get; set; } = new();
+}
+
+public class RenderedTableCell
+{
+    public float Left { get; set; }
+    public float Top { get; set; }
+    public float Width { get; set; }
+    public float Height { get; set; }
+    public string Text { get; set; } = "";
+    public bool IsHeader { get; set; }
+    public int RowIndex { get; set; }
+    public int ColumnIndex { get; set; }
 }

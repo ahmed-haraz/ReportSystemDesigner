@@ -1,20 +1,15 @@
 using System;
-using System.Collections;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
 namespace ReportDesigner.Desktop.Converters;
 
-public class CountToVisibilityConverter : IValueConverter
+public class BoolToFontWeightConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is int count)
-            return count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        if (value is ICollection col)
-            return col.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        return Visibility.Collapsed;
+        return value is bool b && b ? FontWeights.Bold : FontWeights.Normal;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
