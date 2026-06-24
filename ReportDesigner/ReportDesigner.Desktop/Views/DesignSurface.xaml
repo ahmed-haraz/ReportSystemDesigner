@@ -15,10 +15,10 @@
         <Canvas Grid.Row="0"
                 Background="#F0F0F0"
                 x:Name="HorizontalRuler">
-            <TextBlock Text="Ruler"
-                       Margin="5,2"
-                       FontSize="10"
-                       Foreground="Gray" />
+            <StackPanel Orientation="Horizontal" Margin="5,2">
+                <TextBlock Text="Ruler" FontSize="10" Foreground="Gray" />
+                <TextBlock Text=" | drag bands/objects from the toolbox; objects snap to grid and can be moved anywhere inside a band" FontSize="10" Foreground="Gray" />
+            </StackPanel>
         </Canvas>
 
         <ScrollViewer Grid.Row="1"

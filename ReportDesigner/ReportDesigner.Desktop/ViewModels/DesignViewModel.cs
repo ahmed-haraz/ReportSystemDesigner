@@ -30,6 +30,12 @@ public partial class DesignViewModel : ObservableObject
     private bool _isDragging;
 
     [ObservableProperty]
+    private bool _snapToGrid = true;
+
+    [ObservableProperty]
+    private float _gridSize = 5;
+
+    [ObservableProperty]
     private Point _dragStart;
 
     [ObservableProperty]
@@ -108,41 +114,7 @@ public partial class DesignViewModel : ObservableObject
             return;
         }
 
-        var obj = new ReportObject
-        {
-            Type = type,
-            Name = $"{type}Object{SelectedBand.Objects.Count + 1}",
-            Left = 10,
-            Top = 5,
-            Width = GetDefaultObjectWidth(type),
-            Height = GetDefaultObjectHeight(type),
-            TextProps = new TextProperties()
-        };
-
-        switch (type)
-        {
-            case ObjectType.Text:
-                obj.Text = "Text";
-                break;
-            case ObjectType.Picture:
-                obj.Text = "[Picture]";
-                obj.PictureProps = new PictureProperties();
-                break;
-            case ObjectType.Barcode:
-                obj.Text = "[Barcode]";
-                obj.BarcodeProps = new BarcodeProperties();
-                break;
-            case ObjectType.Line:
-                obj.Width = 100;
-                obj.Height = 1;
-                break;
-            case ObjectType.Shape:
-                obj.ShapeProps = new ShapeProperties();
-                break;
-            case ObjectType.Table:
-                obj.TableProps = new TableProperties();
-                break;
-        }
+        var obj = CreateDefaultObject(type, SelectedBand.Objects.Count + 1);
 
         SelectedBand.Objects.Add(obj);
         SelectedObject = obj;
@@ -167,13 +139,9 @@ public partial class DesignViewModel : ObservableObject
     // Manual methods (not RelayCommand) - called directly from code-behind
     public void MoveObject(ReportObject obj, double deltaX, double deltaY)
     {
-        obj.Left += (float)deltaX;
-        obj.Top += (float)deltaY;
-
-        if (obj.Left < 0) obj.Left = 0;
-        if (obj.Top < 0) obj.Top = 0;
-        if (obj.Left + obj.Width > PageWidth) obj.Left = PageWidth - obj.Width;
-        if (obj.Top + obj.Height > SelectedBand?.Height) obj.Top = (SelectedBand?.Height ?? 0) - obj.Height;
+        obj.Left = Snap((float)(obj.Left + deltaX));
+        obj.Top = Snap((float)(obj.Top + deltaY));
+        ClampObjectToBand(obj, SelectedBand);
     }
 
     public void ResizeObject(ReportObject obj, double newWidth, double newHeight)
@@ -208,20 +176,19 @@ public partial class DesignViewModel : ObservableObject
 
     public void DropObject(ObjectType type, Point position)
     {
-        if (SelectedBand == null) return;
+        var pageX = (float)(position.X / Zoom);
+        var pageY = (float)(position.Y / Zoom);
+        var targetBand = FindBandAt(pageY) ?? SelectedBand;
+        if (targetBand == null) return;
 
-        var obj = new ReportObject
-        {
-            Type = type,
-            Name = $"{type}Object{SelectedBand.Objects.Count + 1}",
-            Left = (float)(position.X / Zoom),
-            Top = (float)(position.Y / Zoom),
-            Width = GetDefaultObjectWidth(type),
-            Height = GetDefaultObjectHeight(type),
-            TextProps = new TextProperties()
-        };
+        SelectBand(targetBand);
 
-        SelectedBand.Objects.Add(obj);
+        var obj = CreateDefaultObject(type, targetBand.Objects.Count + 1);
+        obj.Left = Snap(pageX);
+        obj.Top = Snap(pageY - targetBand.Top);
+        ClampObjectToBand(obj, targetBand);
+
+        targetBand.Objects.Add(obj);
         SelectedObject = obj;
 
         OnPropertyChanged(nameof(Bands));
@@ -259,6 +226,42 @@ public partial class DesignViewModel : ObservableObject
         }
 
         OnPropertyChanged(nameof(Bands));
+    }
+
+    private ReportObject CreateDefaultObject(ObjectType type, int index)
+    {
+        var obj = new ReportObject
+        {
+            Type = type,
+            Name = $"{type}Object{index}",
+            Left = 10,
+            Top = 5,
+            Width = GetDefaultObjectWidth(type),
+            Height = GetDefaultObjectHeight(type),
+            TextProps = new TextProperties(),
+            Text = type == ObjectType.Text ? "Text" : $"[{type}]"
+        };
+
+        if (type == ObjectType.Picture) obj.PictureProps = new PictureProperties();
+        if (type == ObjectType.Barcode) obj.BarcodeProps = new BarcodeProperties();
+        if (type == ObjectType.Shape) obj.ShapeProps = new ShapeProperties();
+        if (type == ObjectType.Table) obj.TableProps = new TableProperties();
+
+        return obj;
+    }
+
+    private Band? FindBandAt(float pageY) =>
+        Bands.OrderBy(b => b.Top).FirstOrDefault(b => pageY >= b.Top && pageY <= b.Top + b.Height);
+
+    private float Snap(float value) => SnapToGrid && GridSize > 0
+        ? MathF.Round(value / GridSize) * GridSize
+        : value;
+
+    private void ClampObjectToBand(ReportObject obj, Band? band)
+    {
+        if (band == null) return;
+        obj.Left = Math.Clamp(obj.Left, 0, Math.Max(0, PageWidth - obj.Width));
+        obj.Top = Math.Clamp(obj.Top, 0, Math.Max(0, band.Height - obj.Height));
     }
 
     private float GetDefaultBandHeight(BandType type)
