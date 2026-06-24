@@ -50,6 +50,22 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private double _zoomValue = 1.0;
 
+    [ObservableProperty]
+    private string _selectedPaperName = "A4";
+
+    [ObservableProperty]
+    private PageOrientation _selectedPageOrientation = PageOrientation.Portrait;
+
+    [ObservableProperty]
+    private float _pageWidthInput = 595;
+
+    [ObservableProperty]
+    private float _pageHeightInput = 842;
+
+    public ObservableCollection<string> PaperSizeOptions { get; } = new(PageSizePreset.All.Select(p => p.Name));
+
+    public ObservableCollection<PageOrientation> PageOrientationOptions { get; } = new(Enum.GetValues<PageOrientation>());
+
     public ObservableCollection<string> ZoomLevels { get; } = new()
     {
         "25%", "50%", "75%", "100%", "125%", "150%", "200%", "400%"
@@ -66,6 +82,17 @@ public partial class MainViewModel : ObservableObject
             {
                 CurrentReport.Bands = DesignViewModel.Bands.ToList();
                 OnPropertyChanged(nameof(ReportBands));
+            }
+            else if (e.PropertyName == nameof(DesignViewModel.SelectedObject))
+            {
+                PropertiesViewModel.SelectedObject = DesignViewModel.SelectedObject;
+                SelectedObjectInfo = DesignViewModel.SelectedObject == null
+                    ? string.Empty
+                    : $"{DesignViewModel.SelectedObject.Name} ({DesignViewModel.SelectedObject.Type})";
+            }
+            else if (e.PropertyName == nameof(DesignViewModel.SelectedBand))
+            {
+                PropertiesViewModel.SelectedBand = DesignViewModel.SelectedBand;
             }
         };
 
@@ -84,15 +111,9 @@ public partial class MainViewModel : ObservableObject
     private void InitializeDefaultReport()
     {
         CurrentReport.Name = "New Report";
-        CurrentReport.Page = new PageSettings
-        {
-            Width = 595,
-            Height = 842,
-            LeftMargin = 40,
-            RightMargin = 40,
-            TopMargin = 40,
-            BottomMargin = 40
-        };
+        CurrentReport.Page = new PageSettings();
+        CurrentReport.Page.ApplyPreset(SelectedPaperName, SelectedPageOrientation);
+        SyncPageToDesigner();
 
         // Add default bands
         DesignViewModel.AddBand(BandType.ReportTitle);
@@ -111,6 +132,54 @@ public partial class MainViewModel : ObservableObject
             DesignViewModel.Zoom = (float)ZoomValue;
             StatusMessage = $"Zoom set to {value}";
         }
+    }
+
+    partial void OnSelectedPaperNameChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return;
+        ApplyPageSettingsFromToolbar();
+    }
+
+    partial void OnSelectedPageOrientationChanged(PageOrientation value) => ApplyPageSettingsFromToolbar();
+    partial void OnPageWidthInputChanged(float value) { if (SelectedPaperName == "Custom") ApplyPageSettingsFromToolbar(); }
+    partial void OnPageHeightInputChanged(float value) { if (SelectedPaperName == "Custom") ApplyPageSettingsFromToolbar(); }
+
+    private void ApplyPageSettingsFromToolbar()
+    {
+        if (CurrentReport.Page == null)
+        {
+            CurrentReport.Page = new PageSettings();
+        }
+
+        if (SelectedPaperName == "Custom")
+        {
+            CurrentReport.Page.ApplyCustomSize(PageWidthInput, PageHeightInput);
+            CurrentReport.Page.Orientation = SelectedPageOrientation;
+        }
+        else
+        {
+            CurrentReport.Page.ApplyPreset(SelectedPaperName, SelectedPageOrientation);
+            PageWidthInput = CurrentReport.Page.Width;
+            PageHeightInput = CurrentReport.Page.Height;
+        }
+
+        SyncPageToDesigner();
+        StatusMessage = $"Report size set to {CurrentReport.Page.PaperName} ({CurrentReport.Page.Width:0} x {CurrentReport.Page.Height:0})";
+    }
+
+    private void SyncPageToDesigner()
+    {
+        DesignViewModel.PageWidth = CurrentReport.Page.Width;
+        DesignViewModel.PageHeight = CurrentReport.Page.Height;
+    }
+
+    private void SyncPageFromReport()
+    {
+        SelectedPaperName = CurrentReport.Page.PaperName;
+        SelectedPageOrientation = CurrentReport.Page.Orientation;
+        PageWidthInput = CurrentReport.Page.Width;
+        PageHeightInput = CurrentReport.Page.Height;
+        SyncPageToDesigner();
     }
 
     [RelayCommand]
@@ -142,6 +211,7 @@ public partial class MainViewModel : ObservableObject
                 // Sync to child viewmodels
                 DesignViewModel.Bands = new ObservableCollection<Band>(CurrentReport.Bands);
                 DataSourceViewModel.DataSources = new ObservableCollection<DataSource>(CurrentReport.DataSources);
+                SyncPageFromReport();
 
                 StatusMessage = $"Opened: {dialog.FileName}";
                 OnPropertyChanged(nameof(ReportBands));

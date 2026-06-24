@@ -12,6 +12,8 @@ public partial class PropertiesViewModel : ObservableObject
     [ObservableProperty]
     private Band? _selectedBand;
 
+    public bool HasSelectedObject => SelectedObject != null;
+
     // Position properties
     [ObservableProperty]
     private float _objectLeft;
@@ -100,6 +102,8 @@ public partial class PropertiesViewModel : ObservableObject
 
     partial void OnSelectedObjectChanged(ReportObject? value)
     {
+        OnPropertyChanged(nameof(HasSelectedObject));
+
         if (value != null)
         {
             LoadObjectProperties(value);

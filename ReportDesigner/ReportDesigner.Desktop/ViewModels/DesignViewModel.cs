@@ -70,6 +70,14 @@ public partial class DesignViewModel : ObservableObject
     [RelayCommand]
     public void SelectObject(ReportObject obj)
     {
+        foreach (var band in Bands)
+        {
+            foreach (var reportObject in band.Objects)
+            {
+                reportObject.IsSelected = ReferenceEquals(reportObject, obj);
+            }
+        }
+
         SelectedObject = obj;
     }
 
