@@ -15,10 +15,10 @@
         <Canvas Grid.Row="0"
                 Background="#F0F0F0"
                 x:Name="HorizontalRuler">
-            <TextBlock Text="Ruler"
-                       Margin="5,2"
-                       FontSize="10"
-                       Foreground="Gray" />
+            <StackPanel Orientation="Horizontal" Margin="5,2">
+                <TextBlock Text="Ruler" FontSize="10" Foreground="Gray" />
+                <TextBlock Text=" | drag bands/objects from the toolbox; objects snap to grid and can be moved anywhere inside a band" FontSize="10" Foreground="Gray" />
+            </StackPanel>
         </Canvas>
 
         <ScrollViewer Grid.Row="1"
@@ -80,11 +80,16 @@
                                     <Canvas />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemContainerStyle>
+                                <Style TargetType="ContentPresenter">
+                                    <Setter Property="Canvas.Top" Value="{Binding Top}" />
+                                    <Setter Property="Canvas.Left" Value="0" />
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Opacity="0.5"
                                             Height="{Binding Height}"
-                                            Canvas.Top="{Binding Top}"
                                             Width="{Binding DataContext.PageWidth, 
                                                     RelativeSource={RelativeSource AncestorType=Canvas}}"
                                             BorderBrush="#0066CC"
@@ -129,11 +134,16 @@
                                     <Canvas />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemContainerStyle>
+                                <Style TargetType="ContentPresenter">
+                                    <Setter Property="Canvas.Left" Value="{Binding Left}" />
+                                    <Setter Property="Canvas.Top" Value="{Binding Top}" />
+                                    <Setter Property="Panel.ZIndex" Value="{Binding ZIndex}" />
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Canvas.Left="{Binding Left}"
-                                            Canvas.Top="{Binding Top}"
-                                            Width="{Binding Width}"
+                                    <Border Width="{Binding Width}"
                                             Height="{Binding Height}"
                                             BorderBrush="Blue"
                                             BorderThickness="1"

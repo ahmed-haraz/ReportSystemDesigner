@@ -65,7 +65,16 @@
                 <Button Content="Print" Command="{Binding PrintCommand}" ToolTip="Print"/>
             </ToolBar>
             <ToolBar>
-                <ComboBox Width="120" SelectedItem="{Binding SelectedZoom}" ItemsSource="{Binding ZoomLevels}"/>
+                <TextBlock Text="Zoom:" VerticalAlignment="Center" Margin="4,0"/>
+                <ComboBox Width="90" SelectedItem="{Binding SelectedZoom}" ItemsSource="{Binding ZoomLevels}"/>
+                <Separator/>
+                <TextBlock Text="Report size:" VerticalAlignment="Center" Margin="4,0"/>
+                <ComboBox Width="120" SelectedItem="{Binding SelectedPaperName, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding PaperSizeOptions}" ToolTip="Choose report paper size (A4, A7, receipt, label, custom)"/>
+                <ComboBox Width="95" SelectedItem="{Binding SelectedPageOrientation}" ItemsSource="{Binding PageOrientationOptions}" ToolTip="Choose page orientation"/>
+                <TextBlock Text="W:" VerticalAlignment="Center" Margin="6,0,2,0"/>
+                <TextBox Width="55" Text="{Binding PageWidthInput, UpdateSourceTrigger=LostFocus}" ToolTip="Custom/report width in points"/>
+                <TextBlock Text="H:" VerticalAlignment="Center" Margin="6,0,2,0"/>
+                <TextBox Width="55" Text="{Binding PageHeightInput, UpdateSourceTrigger=LostFocus}" ToolTip="Custom/report height in points"/>
                 <Separator/>
                 <ToggleButton Content="Grid" IsChecked="{Binding ShowGrid}" ToolTip="Show Grid"/>
                 <ToggleButton Content="Rulers" IsChecked="{Binding ShowRulers}" ToolTip="Show Rulers"/>
