@@ -15,6 +15,40 @@ public class PageSettings
     public string PaperName { get; set; } = "A4";
     public int Resolution { get; set; } = 96; // DPI
 
+
+    public static IReadOnlyList<PageSizePreset> Presets => PageSizePreset.All;
+
+    public void ApplyPreset(string presetName, PageOrientation? orientation = null)
+    {
+        var preset = PageSizePreset.Find(presetName);
+        PaperName = preset.Name;
+        Width = preset.Width;
+        Height = preset.Height;
+
+        if (orientation.HasValue)
+        {
+            Orientation = orientation.Value;
+        }
+
+        if (Orientation == PageOrientation.Landscape && Height > Width)
+        {
+            (Width, Height) = (Height, Width);
+        }
+        else if (Orientation == PageOrientation.Portrait && Width > Height && preset.Category != "Receipt")
+        {
+            (Width, Height) = (Height, Width);
+        }
+
+        LeftMargin = RightMargin = TopMargin = BottomMargin = preset.DefaultMargin;
+    }
+
+    public void ApplyCustomSize(float width, float height, string paperName = "Custom")
+    {
+        PaperName = paperName;
+        Width = Math.Max(1, width);
+        Height = Math.Max(1, height);
+    }
+
     // Watermark
     public string WatermarkText { get; set; } = string.Empty;
     public string WatermarkFont { get; set; } = "Arial";

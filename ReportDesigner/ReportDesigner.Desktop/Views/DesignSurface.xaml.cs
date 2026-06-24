@@ -124,10 +124,16 @@ public partial class DesignSurface : UserControl
             var newLeft = _objectStartPosition.X + deltaX;
             var newTop = _objectStartPosition.Y + deltaY;
 
-            // Keep within bounds
+            if (vm.SnapToGrid && vm.GridSize > 0)
+            {
+                newLeft = Math.Round(newLeft / vm.GridSize) * vm.GridSize;
+                newTop = Math.Round(newTop / vm.GridSize) * vm.GridSize;
+            }
+
+            // Keep within the selected band while allowing free placement anywhere inside it.
             if (newLeft < 0) newLeft = 0;
             if (newTop < 0) newTop = 0;
-            if (newLeft + _draggedObject.Width > vm.PageWidth) 
+            if (newLeft + _draggedObject.Width > vm.PageWidth)
                 newLeft = vm.PageWidth - _draggedObject.Width;
             if (vm.SelectedBand != null && newTop + _draggedObject.Height > vm.SelectedBand.Height)
                 newTop = vm.SelectedBand.Height - _draggedObject.Height;

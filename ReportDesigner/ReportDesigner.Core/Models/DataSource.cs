@@ -15,6 +15,10 @@ public class DataSource
     public string AssemblyName { get; set; } = string.Empty; // For business objects
     public string ClassName { get; set; } = string.Empty; // For business objects
     public string MethodName { get; set; } = string.Empty; // For business objects
+    public Dictionary<string, string> ProviderOptions { get; set; } = new();
+    public string RuntimeProviderKey { get; set; } = string.Empty;
+
+    public DataSourceDefinition Definition => DataSourceCatalog.Get(Type);
 }
 
 public class DataColumn
